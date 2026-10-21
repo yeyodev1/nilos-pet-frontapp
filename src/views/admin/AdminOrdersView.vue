@@ -80,8 +80,8 @@ async function openDetail(order: Order) {
         <div class="atable__main">
           <span class="atable__title">#{{ order.number }} — {{ order.customer.name }}</span>
           <span class="atable__meta">
-            {{ formatDateTime(order.createdAt) }} ·
-            {{ order.items.length }} {{ order.items.length === 1 ? 'ítem' : 'ítems' }} ·
+            {{ formatDateTime(order.createdAt) }} · {{ order.items.length }}
+            {{ order.items.length === 1 ? 'ítem' : 'ítems' }} ·
             {{ order.fulfillment === 'delivery' ? 'Envío' : 'Retiro' }}
           </span>
         </div>
