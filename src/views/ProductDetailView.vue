@@ -158,7 +158,7 @@ function addToCart() {
     @include flex(row, center, center);
     flex: 1;
     aspect-ratio: 1;
-    background: $sand;
+    background: $blush-soft;
     border-radius: $radius-lg;
     overflow: hidden;
 
@@ -176,8 +176,8 @@ function addToCart() {
   }
 
   &__placeholder {
-    font-size: 4rem;
-    color: rgba($accent, 0.3);
+    font-size: 5.5rem;
+    color: rgba($accent, 0.4);
   }
 
   &__info {
@@ -194,8 +194,8 @@ function addToCart() {
   }
 
   &__price {
-    @include display($text-xl, 600);
-    color: $accent-deep;
+    @include display($display-sm, 600);
+    color: $accent;
   }
 
   &__description {
