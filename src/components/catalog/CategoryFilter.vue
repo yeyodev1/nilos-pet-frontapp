@@ -59,19 +59,30 @@ const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
     @include transition;
     @include focus-ring;
 
+    // Hover juguetón: la pastilla se ladea un pelo, como un sticker suelto.
     &:hover {
       border-color: $accent;
+      background: $blush-soft;
       color: $accent-deep;
+      transform: rotate(-1.5deg) translateY(-1px);
     }
 
     &--active {
-      background: $ink;
-      border-color: $ink;
+      background: $accent;
+      border-color: $accent;
       color: $paper;
+      font-weight: 600;
 
       &:hover {
         color: $paper;
-        border-color: $ink;
+        background: $accent-deep;
+        border-color: $accent-deep;
+      }
+    }
+
+    @include reduced-motion {
+      &:hover {
+        transform: none;
       }
     }
   }
