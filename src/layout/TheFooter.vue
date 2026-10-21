@@ -1,14 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { site, whatsappLink } from '@/config/site'
+import logo from '@/assets/logo.png'
 
 const year = new Date().getFullYear()
+
+// La columna de contacto solo existe si hay algún dato confirmado.
+const hasContact = computed(() => Boolean(site.email || site.whatsapp))
 </script>
 
 <template>
   <footer class="footer">
     <div class="footer__inner">
       <div class="footer__brand">
-        <span class="footer__name">{{ site.name }}</span>
+        <div class="footer__identity">
+          <img class="footer__logo" :src="logo" alt="" width="48" height="48" />
+          <span class="footer__name">{{ site.name }}</span>
+        </div>
         <p class="footer__tagline">{{ site.tagline }}</p>
       </div>
 
@@ -19,9 +27,9 @@ const year = new Date().getFullYear()
         </RouterLink>
       </div>
 
-      <div class="footer__col">
+      <div v-if="hasContact" class="footer__col">
         <h4 class="footer__heading">Contacto</h4>
-        <a :href="`mailto:${site.email}`">
+        <a v-if="site.email" :href="`mailto:${site.email}`">
           <i class="fa-solid fa-envelope"></i> {{ site.email }}
         </a>
         <a v-if="site.whatsapp" :href="whatsappLink()" target="_blank" rel="noopener">
@@ -31,8 +39,10 @@ const year = new Date().getFullYear()
     </div>
 
     <div class="footer__bar">
-      <span>© {{ year }} {{ site.name }}</span>
-      <span class="footer__credit">Hecho por <a href="https://bakano.ec" target="_blank" rel="noopener">Bakano</a></span>
+      <span>© {{ year }} — {{ site.footerNote }}</span>
+      <span class="footer__credit">
+        Hecho por <a href="https://bakano.ec" target="_blank" rel="noopener">Bakano</a>
+      </span>
     </div>
   </footer>
 </template>
@@ -53,11 +63,20 @@ const year = new Date().getFullYear()
     flex: 2 1 260px;
   }
 
+  &__identity {
+    @include flex(row, center, flex-start, 0.8rem);
+    margin-bottom: 0.8rem;
+  }
+
+  &__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+  }
+
   &__name {
     @include display($text-xl, 600);
     color: $paper;
-    display: block;
-    margin-bottom: 0.6rem;
   }
 
   &__tagline {
@@ -71,6 +90,7 @@ const year = new Date().getFullYear()
     font-size: $text-sm;
 
     a {
+      @include flex(row, center, flex-start, 0.5rem);
       color: rgba($paper, 0.75);
       @include transition(color);
 
