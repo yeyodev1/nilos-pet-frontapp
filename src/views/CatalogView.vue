@@ -6,6 +6,8 @@ import { useCatalog } from '@/composables/useCatalog'
 import ProductCard from '@/components/catalog/ProductCard.vue'
 import ProductCardSkeleton from '@/components/catalog/ProductCardSkeleton.vue'
 import CategoryFilter from '@/components/catalog/CategoryFilter.vue'
+import DisplayParts from '@/components/ui/DisplayParts.vue'
+import PawPrint from '@/components/ui/PawPrint.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -46,15 +48,23 @@ function clearFilters() {
 <template>
   <div class="catalog">
     <header class="catalog__head">
-      <p class="catalog__eyebrow">Tienda</p>
-      <h1 class="catalog__title">{{ site.tagline }}</h1>
+      <span class="catalog__paw" aria-hidden="true"><PawPrint /></span>
+      <p class="catalog__eyebrow">{{ site.catalog.eyebrow }}</p>
+      <h1 class="catalog__title">
+        <DisplayParts :parts="site.catalog.titleParts" />
+      </h1>
+      <p v-if="!loading && !error" class="catalog__tally">
+        <strong>{{ total }}</strong> {{ total === 1 ? 'producto' : 'productos' }}
+        <template v-if="category || search.trim()"> con tus filtros</template>
+        <template v-else> esperándote</template>
+      </p>
 
       <div class="catalog__search">
         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         <input
           v-model="search"
           type="search"
-          placeholder="Busca alimento, medicinas, accesorios…"
+          :placeholder="site.catalog.searchPlaceholder"
           aria-label="Buscar productos"
         />
       </div>
@@ -64,7 +74,7 @@ function clearFilters() {
 
     <section class="catalog__results" aria-live="polite">
       <div v-if="loading" class="catalog__list">
-        <ProductCardSkeleton v-for="n in 6" :key="n" />
+        <ProductCardSkeleton v-for="n in 6" :key="n" :tone="n % 2 === 0 ? 'blush' : 'sand'" />
       </div>
 
       <div v-else-if="error" class="catalog__state">
@@ -91,9 +101,13 @@ function clearFilters() {
       </div>
 
       <template v-else>
-        <p class="catalog__count">{{ total }} {{ total === 1 ? 'producto' : 'productos' }}</p>
         <div class="catalog__list">
-          <ProductCard v-for="product in products" :key="product._id" :product="product" />
+          <ProductCard
+            v-for="(product, index) in products"
+            :key="product._id"
+            :product="product"
+            :tone-seed="index"
+          />
         </div>
 
         <nav v-if="pages > 1" class="catalog__pagination" aria-label="Paginación">
@@ -114,10 +128,28 @@ function clearFilters() {
 .catalog {
   @include container;
   padding-block: $space-lg $space-section;
+  // La huella decorativa asoma por el borde: que no cree scroll horizontal.
+  overflow-x: clip;
 
   &__head {
-    @include flex(column, stretch, flex-start, 1.2rem);
+    @include flex(column, stretch, flex-start, 1rem);
+    position: relative;
     margin-bottom: $space-lg;
+  }
+
+  &__paw {
+    position: absolute;
+    top: -1.5rem;
+    right: 0;
+    font-size: 7.5rem;
+    color: rgba($blush, 0.45);
+    transform: rotate(16deg);
+    pointer-events: none;
+
+    @include from('md') {
+      right: 4%;
+      font-size: 9rem;
+    }
   }
 
   &__eyebrow {
@@ -125,8 +157,21 @@ function clearFilters() {
   }
 
   &__title {
-    @include display($display-md);
+    @include display(clamp(2.4rem, 6.5vw, 4.6rem));
     max-width: 20ch;
+  }
+
+  &__tally {
+    font-size: $text-lg;
+    color: $ink-soft;
+
+    strong {
+      font-family: $font-display;
+      font-style: italic;
+      font-size: 1.35em;
+      font-weight: 600;
+      color: $accent;
+    }
   }
 
   &__search {
@@ -147,12 +192,6 @@ function clearFilters() {
       padding-left: 2.6rem;
       border-radius: $radius-pill;
     }
-  }
-
-  &__count {
-    @include eyebrow;
-    color: $ink-muted;
-    margin-bottom: 1.2rem;
   }
 
   &__list {
