@@ -24,9 +24,12 @@ const toastStore = useToastStore()
 
 const menuOpen = ref(false)
 
-watch(() => route.path, () => {
-  menuOpen.value = false
-})
+watch(
+  () => route.path,
+  () => {
+    menuOpen.value = false
+  },
+)
 
 function logout() {
   userStore.clear()
