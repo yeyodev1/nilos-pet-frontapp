@@ -1,12 +1,36 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { site, whatsappLink } from '@/config/site'
-import logo from '@/assets/logo.png'
+import nilos from '@/assets/logo-nilos.webp'
 
 const year = new Date().getFullYear()
 
 // La columna de contacto solo existe si hay algún dato confirmado.
 const hasContact = computed(() => Boolean(site.email || site.whatsapp))
+
+// El wordmark entra en outline y se rellena al llegar al viewport.
+const wordmark = ref<HTMLElement | null>(null)
+const filled = ref(false)
+let observer: IntersectionObserver | undefined
+
+onMounted(() => {
+  if (!wordmark.value || !('IntersectionObserver' in window)) {
+    filled.value = true
+    return
+  }
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        filled.value = true
+        observer?.disconnect()
+      }
+    },
+    { threshold: 0.4 },
+  )
+  observer.observe(wordmark.value)
+})
+
+onBeforeUnmount(() => observer?.disconnect())
 </script>
 
 <template>
@@ -14,7 +38,7 @@ const hasContact = computed(() => Boolean(site.email || site.whatsapp))
     <div class="footer__inner">
       <div class="footer__brand">
         <div class="footer__identity">
-          <img class="footer__logo" :src="logo" alt="" width="48" height="48" />
+          <img class="footer__logo" :src="nilos" alt="" width="52" height="45" />
           <span class="footer__name">{{ site.name }}</span>
         </div>
         <p class="footer__tagline">{{ site.tagline }}</p>
@@ -44,6 +68,15 @@ const hasContact = computed(() => Boolean(site.email || site.whatsapp))
         Hecho por <a href="https://bakano.ec" target="_blank" rel="noopener">Bakano</a>
       </span>
     </div>
+
+    <p
+      ref="wordmark"
+      class="footer__wordmark"
+      :class="{ 'footer__wordmark--filled': filled }"
+      aria-hidden="true"
+    >
+      {{ site.wordmark }}
+    </p>
   </footer>
 </template>
 
@@ -52,6 +85,7 @@ const hasContact = computed(() => Boolean(site.email || site.whatsapp))
   background: $ink;
   color: rgba($paper, 0.85);
   margin-top: auto;
+  overflow: hidden;
 
   &__inner {
     @include container;
@@ -69,9 +103,8 @@ const hasContact = computed(() => Boolean(site.email || site.whatsapp))
   }
 
   &__logo {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 52px;
+    height: auto;
   }
 
   &__name {
@@ -95,14 +128,14 @@ const hasContact = computed(() => Boolean(site.email || site.whatsapp))
       @include transition(color);
 
       &:hover {
-        color: $accent-soft;
+        color: $blush;
       }
     }
   }
 
   &__heading {
     @include eyebrow;
-    color: $accent-soft;
+    color: $blush;
     margin-bottom: 0.4rem;
   }
 
@@ -118,6 +151,33 @@ const hasContact = computed(() => Boolean(site.email || site.whatsapp))
 
   &__credit a {
     color: rgba($paper, 0.8);
+  }
+
+  // El cierre de cada página: la marca a todo lo ancho, de contorno a relleno.
+  &__wordmark {
+    font-family: $font-display;
+    font-size: clamp(3.2rem, 14.5vw, 12.5rem);
+    font-weight: 600;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-align: center;
+    white-space: nowrap;
+    user-select: none;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba($blush, 0.55);
+    transition: color 1.1s $ease;
+    padding-top: 1.5rem;
+    margin-bottom: -0.08em;
+
+    &--filled,
+    &:hover {
+      color: $blush;
+    }
+
+    @include reduced-motion {
+      transition: none;
+      color: $blush;
+    }
   }
 }
 </style>
