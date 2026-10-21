@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
+import { site } from '@/config/site'
 import { catalogService } from '@/services/catalog.service'
+import { useGsapReveal } from '@/composables/useGsapReveal'
 import type { Product } from '@/types'
 import ProductCard from '@/components/catalog/ProductCard.vue'
+import DisplayParts from '@/components/ui/DisplayParts.vue'
 
+const root = ref<HTMLElement | null>(null)
 const products = ref<Product[]>([])
 const loaded = ref(false)
+
+const { init, refresh } = useGsapReveal(root)
 
 // Si el catálogo aún está vacío (o el API no responde), la sección no existe.
 onMounted(async () => {
@@ -16,25 +22,38 @@ onMounted(async () => {
     products.value = []
   } finally {
     loaded.value = true
+    await nextTick()
+    init()
+    refresh()
   }
 })
 </script>
 
 <template>
-  <section v-if="loaded && products.length > 0" class="featured">
+  <section v-if="loaded && products.length > 0" ref="root" class="featured">
     <div class="featured__inner">
-      <div class="featured__head">
+      <div class="featured__head" data-reveal>
         <div>
-          <p class="featured__eyebrow">Destacados</p>
-          <h2 class="featured__title">Los favoritos de la tienda</h2>
+          <p class="featured__eyebrow">{{ site.featuredSection.eyebrow }}</p>
+          <h2 class="featured__title">
+            <DisplayParts :parts="site.featuredSection.titleParts" />
+          </h2>
         </div>
         <RouterLink to="/tienda" class="featured__link">
-          Ver toda la tienda <i class="fa-solid fa-arrow-right"></i>
+          {{ site.featuredSection.cta }} <i class="fa-solid fa-arrow-right"></i>
         </RouterLink>
       </div>
 
       <div class="featured__list">
-        <ProductCard v-for="product in products" :key="product._id" :product="product" />
+        <div
+          v-for="(product, index) in products"
+          :key="product._id"
+          class="featured__cell"
+          data-reveal
+          :data-reveal-delay="index * 0.08"
+        >
+          <ProductCard :product="product" :tone-seed="index" />
+        </div>
       </div>
     </div>
   </section>
@@ -42,7 +61,7 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .featured {
-  background: $sand;
+  border-top: 1px solid $line;
 
   &__inner {
     @include container;
@@ -61,11 +80,11 @@ onMounted(async () => {
 
   &__eyebrow {
     @include eyebrow;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
   }
 
   &__title {
-    @include display($display-sm, 500);
+    @include display($display-md);
   }
 
   &__link {
@@ -73,15 +92,26 @@ onMounted(async () => {
     font-size: $text-sm;
     font-weight: 600;
     color: $accent-deep;
-    @include transition(gap);
 
-    &:hover {
-      gap: 0.8rem;
+    .fa-arrow-right {
+      @include transition(transform);
+    }
+
+    &:hover .fa-arrow-right {
+      transform: translateX(4px);
     }
   }
 
   &__list {
-    @include flex-cards(250px, 1.5rem);
+    @include flex-cards(230px, 1.5rem);
+  }
+
+  &__cell {
+    @include flex(column, stretch, flex-start);
+
+    > * {
+      flex: 1;
+    }
   }
 }
 </style>
