@@ -13,6 +13,12 @@ $surface: #ffffff; // superficies elevadas
 $sand: #f1ece6; // bloques suaves
 $line: #e7e1d9; // bordes
 
+// Rosa empolvado cálido: el segundo color de marca. Se usa en stickers,
+// placeholders y formas de fondo — nunca como color de texto sobre claro.
+$blush: #e3bdb0;
+$blush-soft: color.mix($blush, #ffffff, 52%);
+$blush-deep: color.adjust($blush, $lightness: -16%, $saturation: 8%);
+
 // Texto
 $ink: #191423; // texto principal
 $ink-soft: #4a4552; // texto secundario
@@ -39,6 +45,10 @@ $text-light: $surface;
 $text-secondary: $ink-soft;
 
 // Sombras — suaves, nada de "card de dashboard"
-$shadow-sm: 0 1px 2px rgba($ink, 0.04), 0 4px 12px rgba($ink, 0.04);
-$shadow-md: 0 2px 6px rgba($ink, 0.05), 0 18px 40px rgba($ink, 0.08);
+$shadow-sm:
+  0 1px 2px rgba($ink, 0.04),
+  0 4px 12px rgba($ink, 0.04);
+$shadow-md:
+  0 2px 6px rgba($ink, 0.05),
+  0 18px 40px rgba($ink, 0.08);
 $shadow-lg: 0 30px 70px rgba($ink, 0.14);
