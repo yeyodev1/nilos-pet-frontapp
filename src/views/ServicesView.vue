@@ -116,7 +116,7 @@ const flow = [
   }
 
   &__title {
-    @include display($display-md);
+    @include display(clamp(2.4rem, 6vw, 4.2rem));
   }
 
   &__subtitle {
@@ -125,18 +125,42 @@ const flow = [
   }
 
   &__flow {
-    @include flex-cards(170px, 0.8rem);
+    @include flex-cards(170px, 1rem);
     list-style: none;
     margin-bottom: $space-lg;
 
+    // Tarjetas apenas ladeadas que se enderezan al hover: el gesto de la marca.
     &-step {
       @include card;
       @include flex(column, flex-start, flex-start, 0.4rem);
-      background: $sand;
       border-color: transparent;
-      padding: 1rem 1.1rem;
+      box-shadow: $shadow-sm;
+      padding: 1.1rem 1.2rem;
       font-size: $text-sm;
       font-weight: 500;
+      @include transition(transform);
+
+      &:nth-child(odd) {
+        background: $sand;
+        transform: rotate(-1.5deg);
+      }
+
+      &:nth-child(even) {
+        background: $blush-soft;
+        transform: rotate(1.5deg);
+      }
+
+      &:hover {
+        transform: rotate(0deg) translateY(-3px);
+      }
+
+      @include reduced-motion {
+        transform: none;
+
+        &:hover {
+          transform: none;
+        }
+      }
 
       i {
         color: $accent-deep;
@@ -144,9 +168,9 @@ const flow = [
     }
 
     &-number {
-      @include eyebrow;
-      font-size: 0.6rem;
-      color: $ink-muted;
+      @include display(1.3rem, 600);
+      font-style: italic;
+      color: $blush-deep;
     }
   }
 
