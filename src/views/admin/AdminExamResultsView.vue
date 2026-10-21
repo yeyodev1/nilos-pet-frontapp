@@ -185,7 +185,13 @@ async function confirmDelete() {
         </div>
         <div>
           <label for="ex-title">Título del examen</label>
-          <input id="ex-title" v-model="form.title" type="text" required placeholder="Ej.: Hemograma completo" />
+          <input
+            id="ex-title"
+            v-model="form.title"
+            type="text"
+            required
+            placeholder="Ej.: Hemograma completo"
+          />
         </div>
         <div class="exams__pair">
           <div>
@@ -194,7 +200,12 @@ async function confirmDelete() {
           </div>
           <div>
             <label for="ex-file">Archivo (PDF o imagen)</label>
-            <input id="ex-file" type="file" accept="application/pdf,image/*" @change="onFileChange" />
+            <input
+              id="ex-file"
+              type="file"
+              accept="application/pdf,image/*"
+              @change="onFileChange"
+            />
           </div>
         </div>
         <div>
