@@ -18,10 +18,7 @@ const { items, loading, error, page, pages, total } = useAdminList<AdminCustomer
 
 <template>
   <div class="customers">
-    <AdminPageHead
-      title="Clientes"
-      subtitle="Las cuentas registradas en la tienda de Nilos Pet."
-    />
+    <AdminPageHead title="Clientes" subtitle="Las cuentas registradas en la tienda de Nilos Pet." />
 
     <div class="customers__search">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -37,7 +34,9 @@ const { items, loading, error, page, pages, total } = useAdminList<AdminCustomer
       :loading="loading"
       :error="error"
       :count="items.length"
-      :empty-text="search ? 'Ningún cliente coincide con la búsqueda.' : 'Todavía no hay clientes registrados.'"
+      :empty-text="
+        search ? 'Ningún cliente coincide con la búsqueda.' : 'Todavía no hay clientes registrados.'
+      "
       empty-icon="fa-solid fa-users"
     >
       <article v-for="customer in items" :key="customer.id" class="atable__row">
