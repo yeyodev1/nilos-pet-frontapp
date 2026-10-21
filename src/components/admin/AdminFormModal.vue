@@ -33,12 +33,7 @@ useBodyScroll(toRef(props, 'open'))
         >
           <header class="fmodal__head">
             <h3 class="fmodal__title">{{ title }}</h3>
-            <button
-              type="button"
-              class="fmodal__close"
-              aria-label="Cerrar"
-              @click="emit('close')"
-            >
+            <button type="button" class="fmodal__close" aria-label="Cerrar" @click="emit('close')">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </header>
