@@ -131,11 +131,15 @@ function onRemoveImage(publicId: string) {
                 type="button"
                 class="pform__shot-remove"
                 :class="{ 'pform__shot-remove--armed': armedImage === image.publicId }"
-                :aria-label="armedImage === image.publicId ? 'Confirmar borrado' : 'Eliminar imagen'"
+                :aria-label="
+                  armedImage === image.publicId ? 'Confirmar borrado' : 'Eliminar imagen'
+                "
                 :title="armedImage === image.publicId ? 'Clic de nuevo para confirmar' : 'Eliminar'"
                 @click="onRemoveImage(image.publicId)"
               >
-                <i :class="armedImage === image.publicId ? 'fa-solid fa-check' : 'fa-solid fa-xmark'"></i>
+                <i
+                  :class="armedImage === image.publicId ? 'fa-solid fa-check' : 'fa-solid fa-xmark'"
+                ></i>
               </button>
             </figure>
           </div>
