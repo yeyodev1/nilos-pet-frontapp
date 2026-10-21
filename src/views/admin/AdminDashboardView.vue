@@ -72,10 +72,7 @@ const cards = computed(() => {
 
 <template>
   <div class="dash">
-    <AdminPageHead
-      title="Resumen"
-      subtitle="Lo que está pasando en Nilos Pet, de un vistazo."
-    />
+    <AdminPageHead title="Resumen" subtitle="Lo que está pasando en Nilos Pet, de un vistazo." />
 
     <div v-if="loading" class="dash__state">
       <i class="fa-solid fa-spinner fa-spin"></i>
@@ -93,8 +90,8 @@ const cards = computed(() => {
           <i class="fa-solid fa-tag"></i>
           <span>
             <strong>{{ stats.unpriced }}</strong>
-            {{ stats.unpriced === 1 ? 'producto sigue' : 'productos siguen' }} sin precio
-            — ponles precio y publícalos
+            {{ stats.unpriced === 1 ? 'producto sigue' : 'productos siguen' }} sin precio — ponles
+            precio y publícalos
           </span>
           <i class="fa-solid fa-arrow-right"></i>
         </RouterLink>
