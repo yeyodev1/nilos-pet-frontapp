@@ -52,7 +52,7 @@ export interface AdminProductParams {
 export interface ProductInput {
   name: string
   type: ProductType
-  category: string
+  category?: string
   /** Centavos de USD. */
   price: number
   description: string
