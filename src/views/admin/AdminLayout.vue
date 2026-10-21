@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
+import logoNilos from '@/assets/logo-nilos.webp'
 
 // La navegación del admin está atada a las rutas de este layout, no al copy
 // del sitio público, por eso vive acá y no en site.ts.
@@ -50,7 +51,10 @@ function logout() {
       >
         <i :class="menuOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars'"></i>
       </button>
-      <span class="admin__brand">Nilos Pet <em>admin</em></span>
+      <span class="admin__brand">
+        <img class="admin__brand-logo" :src="logoNilos" alt="" />
+        Nilos Pet <em>admin</em>
+      </span>
       <RouterLink class="admin__site-link" to="/" aria-label="Ver el sitio">
         <i class="fa-solid fa-arrow-up-right-from-square"></i>
       </RouterLink>
@@ -61,7 +65,10 @@ function logout() {
     </Transition>
 
     <aside class="admin__sidebar" :class="{ 'admin__sidebar--open': menuOpen }">
-      <span class="admin__brand admin__brand--side">Nilos Pet <em>admin</em></span>
+      <span class="admin__brand admin__brand--side">
+        <img class="admin__brand-logo" :src="logoNilos" alt="" />
+        Nilos Pet <em>admin</em>
+      </span>
 
       <nav class="admin__nav" aria-label="Secciones del panel">
         <RouterLink
@@ -133,6 +140,7 @@ function logout() {
   }
 
   &__brand {
+    @include flex(row, center, flex-start, 0.55rem);
     font-family: $font-display;
     font-size: 1.05rem;
     font-weight: 600;
@@ -152,6 +160,12 @@ function logout() {
     &--side {
       padding: 0.4rem 0.9rem 1.1rem;
     }
+  }
+
+  &__brand-logo {
+    width: 34px;
+    height: auto;
+    flex-shrink: 0;
   }
 
   &__site-link {
