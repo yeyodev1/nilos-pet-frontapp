@@ -57,6 +57,11 @@ async function submit() {
         <i v-if="loading" class="fa-solid fa-spinner fa-spin"></i>
         {{ loading ? 'Ingresando…' : 'Ingresar' }}
       </button>
+
+      <p class="login__alt">
+        ¿No tienes cuenta?
+        <RouterLink :to="{ name: 'Register' }">Crear cuenta</RouterLink>
+      </p>
     </form>
   </section>
 </template>
@@ -95,6 +100,17 @@ async function submit() {
 
   &__submit {
     margin-top: 0.4rem;
+  }
+
+  &__alt {
+    font-size: $text-sm;
+    color: $ink-soft;
+    text-align: center;
+
+    a {
+      color: $accent;
+      font-weight: 600;
+    }
   }
 }
 </style>
