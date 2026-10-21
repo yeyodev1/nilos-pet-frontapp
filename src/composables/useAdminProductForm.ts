@@ -35,10 +35,8 @@ export function useAdminProductForm(
     current.value = product
     form.name = product?.name || ''
     form.type = product?.type || 'physical'
-    form.category =
-      product?.category && typeof product.category === 'object'
-        ? product.category._id
-        : product?.category || ''
+    const category = product?.category
+    form.category = category && typeof category === 'object' ? category._id : category || ''
     form.price = product && product.price > 0 ? (product.price / 100).toFixed(2) : ''
     form.description = product?.description || ''
     form.bookable = product?.bookable || false
