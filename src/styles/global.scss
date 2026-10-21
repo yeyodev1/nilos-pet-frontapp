@@ -158,6 +158,36 @@ label {
     }
   }
 
+  // Para bandas vino o negras: botón crema con tinta.
+  &--paper {
+    background: $paper;
+    color: $ink;
+
+    &:hover {
+      background: $blush;
+      transform: translateY(-1px);
+    }
+  }
+
+  &--ghost-paper {
+    border: 1px solid rgba($paper, 0.55);
+    color: $paper;
+
+    &:hover {
+      background: $paper;
+      color: $ink;
+    }
+  }
+
+  // La flecha del botón se desliza al hacer hover.
+  .fa-arrow-right {
+    @include transition(transform);
+  }
+
+  &:hover .fa-arrow-right {
+    transform: translateX(4px);
+  }
+
   &--danger {
     background: $danger;
     color: $surface;
@@ -167,6 +197,47 @@ label {
     opacity: 0.45;
     pointer-events: none;
   }
+}
+
+// ─── Keyframes compartidos ────────────────────────────────────────────────
+// Viven acá (no en index.scss) porque emiten CSS. Los componentes los usan
+// por nombre; reduced-motion los apaga con la regla global de abajo.
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    // El contenido está duplicado: al llegar a la mitad el loop es invisible.
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--flotar-rot, 0deg));
+  }
+  50% {
+    transform: translateY(-12px) rotate(calc(var(--flotar-rot, 0deg) + 4deg));
+  }
+}
+
+@keyframes pulso {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+// Palabra de acento dentro de un display: la cursiva de la marca.
+.cursiva {
+  font-style: italic;
+  font-weight: 400;
+  color: $accent;
 }
 
 .visually-hidden {
