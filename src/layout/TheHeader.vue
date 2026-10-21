@@ -5,7 +5,7 @@ import { site } from '@/config/site'
 import { useUserStore } from '@/stores/user'
 import { useCartStore } from '@/stores/cart'
 import { useBodyScroll } from '@/composables/useBodyScroll'
-import logo from '@/assets/logo.png'
+import nilos from '@/assets/logo-nilos.webp'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -39,7 +39,7 @@ watch(
   <header class="header" :class="{ 'header--scrolled': scrolled, 'header--open': mobileOpen }">
     <div class="header__inner">
       <RouterLink to="/" class="header__brand">
-        <img class="header__logo" :src="logo" alt="" width="40" height="40" />
+        <img class="header__logo" :src="nilos" alt="" width="46" height="40" />
         <span class="header__name">{{ site.name }}</span>
       </RouterLink>
 
@@ -139,9 +139,13 @@ watch(
   }
 
   &__logo {
-    width: 40px;
+    width: auto;
     height: 40px;
-    border-radius: 50%;
+    @include transition(transform);
+  }
+
+  &__brand:hover .header__logo {
+    transform: rotate(-5deg) scale(1.06);
   }
 
   &__name {
