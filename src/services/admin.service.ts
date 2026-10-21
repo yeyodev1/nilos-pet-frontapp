@@ -59,9 +59,7 @@ export interface ProductInput {
   bookable: boolean
 }
 
-export type ProductPatch = Partial<
-  ProductInput & { isPublished: boolean; isFeatured: boolean }
->
+export type ProductPatch = Partial<ProductInput & { isPublished: boolean; isFeatured: boolean }>
 
 export interface CategoryInput {
   name: string
