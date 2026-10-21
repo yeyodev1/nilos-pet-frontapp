@@ -68,10 +68,6 @@ defineProps<{
     padding: 0.95rem 1.1rem;
     @include transition(background);
 
-    & + .atable__row {
-      border-top: 1px solid $line;
-    }
-
     &:hover {
       background: rgba($sand, 0.45);
     }
@@ -81,6 +77,10 @@ defineProps<{
       align-items: center;
       gap: 1.1rem;
     }
+  }
+
+  :deep(.atable__row + .atable__row) {
+    border-top: 1px solid $line;
   }
 
   :deep(.atable__row--alert) {
@@ -146,11 +146,11 @@ defineProps<{
       border-color: $accent;
       color: $accent;
     }
+  }
 
-    &--danger:hover {
-      border-color: $danger;
-      color: $danger;
-    }
+  :deep(.atable__action--danger:hover) {
+    border-color: $danger;
+    color: $danger;
   }
 }
 </style>
