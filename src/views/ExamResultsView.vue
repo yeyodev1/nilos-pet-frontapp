@@ -96,7 +96,7 @@ const { documentId, results, status, errorMessage, isValid, showHint, sanitize, 
   }
 
   &__title {
-    @include display($display-md);
+    @include display(clamp(2.4rem, 6vw, 4.2rem));
   }
 
   &__subtitle {
@@ -147,7 +147,7 @@ const { documentId, results, status, errorMessage, isValid, showHint, sanitize, 
   &__state {
     @include flex(column, center, center, 0.9rem);
     text-align: center;
-    background: $sand;
+    background: $blush-soft;
     border-radius: $radius-lg;
     padding: $space-xl 1.5rem;
 
