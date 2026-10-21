@@ -42,7 +42,9 @@ const payphone = computed(() => props.order.payphone || null)
       <h4 class="odetail__subtitle">Entrega</h4>
       <p class="odetail__text">
         <template v-if="order.fulfillment === 'delivery'">
-          Envío a domicilio<template v-if="order.deliveryAddress">: {{ order.deliveryAddress }}</template>
+          Envío a domicilio<template v-if="order.deliveryAddress"
+            >: {{ order.deliveryAddress }}</template
+          >
         </template>
         <template v-else>
           Retiro en sucursal<template v-if="branchName">: {{ branchName }}</template>
