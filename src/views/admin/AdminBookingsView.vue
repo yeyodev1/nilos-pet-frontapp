@@ -5,7 +5,8 @@ import AdminPageHead from '@/components/admin/AdminPageHead.vue'
 import AdminTable from '@/components/admin/AdminTable.vue'
 import AdminPaginator from '@/components/admin/AdminPaginator.vue'
 import StatusPill from '@/components/admin/StatusPill.vue'
-import { bookingStatusMeta, formatDateTime } from '@/components/admin/adminFormat'
+import { bookingStatusMeta } from '@/components/admin/adminFormat'
+import { formatDate } from '@/utils/format'
 import { adminService } from '@/services/admin.service'
 import { useAdminList } from '@/composables/useAdminList'
 import { useToastStore } from '@/stores/toast'
@@ -92,11 +93,18 @@ async function changeStatus(booking: Booking, event: Event) {
           <span class="atable__title">{{ serviceName(booking) }}</span>
           <span class="atable__meta">
             <i class="fa-solid fa-calendar-day bookings__meta-icon"></i>
-            {{ formatDateTime(booking.preferredAt) }}
+            {{ formatDate(booking.preferredAt) }}
+            <template v-if="booking.preferredEnd">
+              al {{ formatDate(booking.preferredEnd) }}</template
+            >
             <template v-if="branchName(booking)"> · {{ branchName(booking) }}</template>
           </span>
           <span class="atable__meta">
             {{ booking.customer.name }} · {{ booking.customer.phone }}
+          </span>
+          <span v-if="booking.pet?.name" class="atable__meta">
+            <i class="fa-solid fa-paw bookings__meta-icon"></i>
+            {{ booking.pet.name }} · {{ booking.pet.species }} · {{ booking.pet.breed }}
           </span>
           <span v-if="booking.notes" class="bookings__notes">“{{ booking.notes }}”</span>
         </div>

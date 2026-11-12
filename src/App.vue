@@ -10,7 +10,9 @@ import ToastList from '@/components/ui/ToastList.vue'
     <main class="app__main">
       <RouterView v-slot="{ Component }">
         <Transition name="page" mode="out-in">
-          <component :is="Component" />
+          <KeepAlive include="CatalogView">
+            <component :is="Component" />
+          </KeepAlive>
         </Transition>
       </RouterView>
     </main>

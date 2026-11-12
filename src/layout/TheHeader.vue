@@ -1,52 +1,62 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { site } from '@/config/site'
 import { useUserStore } from '@/stores/user'
 import { useCartStore } from '@/stores/cart'
 import { useBodyScroll } from '@/composables/useBodyScroll'
-import nilos from '@/assets/logo-nilos.webp'
+import HeaderMenu from './HeaderMenu.vue'
+import logo from '@/assets/logo-wordmark.png'
 
 const route = useRoute()
 const userStore = useUserStore()
 const cartStore = useCartStore()
 
 const mobileOpen = ref(false)
-const scrolled = ref(false)
 
 useBodyScroll(mobileOpen)
-
-// El fondo del header aparece recién al hacer scroll.
-function onScroll() {
-  scrolled.value = window.scrollY > 12
-}
-
-onMounted(() => {
-  onScroll()
-  window.addEventListener('scroll', onScroll, { passive: true })
-})
-
-onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 // Al navegar se cierra el menú móvil.
 watch(
   () => route.fullPath,
   () => (mobileOpen.value = false),
 )
+
+/** Activo por ruta, sin contar el hash: "Historia" no debe quedar siempre marcado. */
+function isActive(to: string): boolean {
+  const path = to.split('#')[0] || '/'
+  return path === '/' ? route.path === '/' : route.path.startsWith(path)
+}
 </script>
 
 <template>
-  <header class="header" :class="{ 'header--scrolled': scrolled, 'header--open': mobileOpen }">
+  <header class="header" :class="{ 'header--open': mobileOpen }">
     <div class="header__inner">
-      <RouterLink to="/" class="header__brand">
-        <img class="header__logo" :src="nilos" alt="" width="46" height="40" />
-        <span class="header__name">{{ site.name }}</span>
+      <RouterLink to="/" class="header__brand" :aria-label="`${site.name}, inicio`">
+        <img class="header__logo" :src="logo" :alt="site.name" width="525" height="141" />
       </RouterLink>
 
       <nav class="header__nav" aria-label="Principal">
-        <RouterLink v-for="link in site.nav" :key="link.to" :to="link.to" class="header__link">
-          {{ link.label }}
-        </RouterLink>
+        <div v-for="link in site.nav" :key="link.to" class="header__item">
+          <RouterLink
+            :to="link.to"
+            class="header__link"
+            :class="{ 'header__link--active': isActive(link.to) }"
+          >
+            {{ link.label }}
+            <i v-if="link.children" class="fa-solid fa-chevron-down header__caret"></i>
+          </RouterLink>
+          <div v-if="link.children" class="header__sub">
+            <RouterLink
+              v-for="child in link.children"
+              :key="child.label"
+              :to="child.to"
+              class="header__sub-link"
+            >
+              {{ child.label }}
+            </RouterLink>
+          </div>
+        </div>
       </nav>
 
       <div class="header__actions">
@@ -69,7 +79,7 @@ watch(
         >
           <i class="fa-solid fa-circle-user"></i>
         </RouterLink>
-        <RouterLink v-else to="/login" class="btn btn--primary header__cta">Ingresar</RouterLink>
+        <RouterLink v-else to="/login" class="btn btn--paper header__cta">Ingresar</RouterLink>
 
         <button
           class="header__burger"
@@ -82,97 +92,114 @@ watch(
       </div>
     </div>
 
-    <Transition name="menu">
-      <nav v-if="mobileOpen" class="header__menu" aria-label="Menú móvil">
-        <RouterLink
-          v-for="(link, index) in site.nav"
-          :key="link.to"
-          :to="link.to"
-          class="header__menu-link"
-        >
-          <span class="header__menu-number">{{ String(index + 1).padStart(2, '0') }}</span>
-          {{ link.label }}
-        </RouterLink>
-        <RouterLink
-          :to="userStore.isAuthenticated ? '/cuenta' : '/login'"
-          class="header__menu-link header__menu-link--alt"
-        >
-          <i class="fa-solid fa-circle-user"></i>
-          {{ userStore.isAuthenticated ? 'Mi cuenta' : 'Ingresar' }}
-        </RouterLink>
-      </nav>
-    </Transition>
+    <HeaderMenu :open="mobileOpen" />
   </header>
 </template>
 
 <style scoped lang="scss">
+// Cabecera siempre en vino: el menú se lee sobre cualquier sección.
 .header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: transparent;
-  border-bottom: 1px solid transparent;
-  @include transition(background border-color box-shadow);
-
-  &--scrolled,
-  &--open {
-    background: rgba($paper, 0.92);
-    backdrop-filter: blur(12px);
-    border-bottom-color: $line;
-  }
-
-  &--open {
-    background: $paper;
-    // Sin blur con el menú abierto: backdrop-filter crea un containing block
-    // y rompería el position: fixed del panel móvil.
-    backdrop-filter: none;
-  }
+  background: $accent;
+  box-shadow: 0 6px 24px rgba($ink, 0.14);
 
   &__inner {
-    @include container;
+    @include container(1280px);
     @include flex(row, center, space-between, 1rem);
-    padding-block: 0.7rem;
+    padding-block: 0.6rem;
   }
 
   &__brand {
-    @include flex(row, center, flex-start, 0.65rem);
+    flex-shrink: 0;
+    @include focus-ring($paper);
   }
 
   &__logo {
     width: auto;
-    height: 40px;
+    height: 44px;
     @include transition(transform);
+
+    @include from('lg') {
+      height: 50px;
+    }
   }
 
   &__brand:hover .header__logo {
-    transform: rotate(-5deg) scale(1.06);
-  }
-
-  &__name {
-    @include display($text-lg, 600);
-    color: $ink;
-    white-space: nowrap;
+    transform: scale(1.04);
   }
 
   &__nav {
     display: none;
 
-    @include from('md') {
-      @include flex(row, center, center, 1.75rem);
+    @include from('lg') {
+      @include flex(row, center, center, 1.25rem);
+    }
+  }
+
+  &__item {
+    position: relative;
+
+    &:hover .header__sub,
+    &:focus-within .header__sub {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
   }
 
   &__link {
-    @include eyebrow;
-    color: $ink-soft;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid transparent;
+    @include flex(row, center, flex-start, 0.35rem);
+    font-size: $text-xs;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgba($paper, 0.82);
+    padding: 0.7rem 0;
+    border-bottom: 2px solid transparent;
     @include transition;
+    @include focus-ring($paper);
 
     &:hover,
-    &.router-link-active {
+    &--active {
+      color: $paper;
+      border-color: $blush;
+    }
+  }
+
+  &__caret {
+    font-size: 0.55rem;
+  }
+
+  &__sub {
+    @include flex(column, stretch, flex-start);
+    position: absolute;
+    top: 100%;
+    left: -1rem;
+    min-width: 13.5rem;
+    background: $surface;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-md;
+    padding: 0.4rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    @include transition(opacity transform visibility);
+  }
+
+  &__sub-link {
+    font-size: $text-sm;
+    font-weight: 500;
+    color: $ink;
+    padding: 0.55rem 0.8rem;
+    border-radius: 7px;
+    @include transition(background color);
+
+    &:hover {
+      background: $sand;
       color: $accent-deep;
-      border-color: $accent;
     }
   }
 
@@ -187,13 +214,12 @@ watch(
     height: 2.5rem;
     border-radius: 50%;
     font-size: 1.05rem;
-    color: $ink;
+    color: $paper;
     @include transition;
-    @include focus-ring;
+    @include focus-ring($paper);
 
     &:hover {
-      background: $sand;
-      color: $accent-deep;
+      background: rgba($paper, 0.14);
     }
   }
 
@@ -204,8 +230,8 @@ watch(
     min-width: 1.05rem;
     height: 1.05rem;
     @include flex(row, center, center);
-    background: $accent;
-    color: $surface;
+    background: $blush;
+    color: $accent-deep;
     font-size: 0.6rem;
     font-weight: 700;
     border-radius: $radius-pill;
@@ -218,76 +244,21 @@ watch(
     font-size: $text-xs;
     margin-left: 0.4rem;
 
-    @include from('md') {
+    @include from('lg') {
       display: inline-flex;
     }
   }
 
   &__burger {
     font-size: 1.25rem;
-    color: $ink;
+    color: $paper;
     width: 2.5rem;
     height: 2.5rem;
     @include flex(row, center, center);
 
-    @include from('md') {
+    @include from('lg') {
       display: none;
     }
   }
-
-  &__menu {
-    @include flex(column, stretch, flex-start, 0);
-    position: fixed;
-    inset: 0;
-    top: 57px;
-    background: $paper;
-    padding: 1.6rem 1.25rem;
-    z-index: 90;
-    overflow-y: auto;
-
-    @include from('md') {
-      display: none;
-    }
-  }
-
-  &__menu-link {
-    @include display($display-sm, 500);
-    @include flex(row, baseline, flex-start, 0.9rem);
-    color: $ink;
-    padding-block: 1rem;
-    border-bottom: 1px solid $line;
-    @include transition(color);
-
-    &:hover,
-    &.router-link-active {
-      color: $accent-deep;
-    }
-
-    &--alt {
-      @include flex(row, center, flex-start, 0.9rem);
-      font-size: $text-lg;
-      color: $ink-soft;
-      border-bottom: none;
-      margin-top: 0.6rem;
-    }
-  }
-
-  &__menu-number {
-    @include eyebrow;
-    color: $ink-muted;
-  }
-}
-
-.menu-enter-active,
-.menu-leave-active {
-  transition:
-    opacity 0.25s ease,
-    transform 0.3s $ease;
-}
-
-.menu-enter-from,
-.menu-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
 }
 </style>

@@ -1,150 +1,214 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { Product } from '@/types'
 import { useServiceBooking } from '@/composables/useServiceBooking'
-import BaseModal from '@/components/ui/BaseModal.vue'
 
-const props = defineProps<{ product: Product }>()
+const props = defineProps<{ products: Product[] }>()
+const emit = defineEmits<{ done: [] }>()
 
 const {
   branches,
   loadingBranches,
   branchId,
-  scheduledFor,
-  minAt,
+  date,
+  endDate,
+  minDate,
+  customer,
+  pet,
+  bookable,
+  payable,
+  dateRange,
   selectedBranch,
   ready,
-  addToCartAndPay,
-  modalOpen,
   sending,
-  customer,
-  submitBooking,
-} = useServiceBooking(() => props.product)
-
-const canPay = computed(() => props.product.price > 0)
-
-const modalMessage = computed(() =>
-  selectedBranch.value
-    ? `Déjanos tus datos y te confirmamos la cita en ${selectedBranch.value.name}.`
-    : 'Déjanos tus datos y te confirmamos la cita.',
+  whatsappUrl,
+  pay,
+  book,
+} = useServiceBooking(
+  () => props.products,
+  () => emit('done'),
 )
 </script>
 
 <template>
   <div class="booking">
-    <p class="booking__eyebrow">Reserva tu cita</p>
-
-    <template v-if="loadingBranches">
-      <p class="booking__hint"><i class="fa-solid fa-spinner fa-spin"></i> Cargando sucursales…</p>
-    </template>
-
-    <template v-else-if="branches.length === 0">
-      <p class="booking__hint">
-        <i class="fa-solid fa-circle-info"></i>
-        Aún no hay sucursales disponibles para reservar en línea.
-      </p>
-    </template>
+    <p v-if="loadingBranches" class="booking__hint">
+      <i class="fa-solid fa-spinner fa-spin"></i> Cargando sucursales…
+    </p>
 
     <template v-else>
-      <div class="booking__field">
-        <label for="booking-branch">Sucursal</label>
-        <select id="booking-branch" v-model="branchId">
-          <option value="" disabled>Elige una sucursal</option>
-          <option v-for="branch in branches" :key="branch._id" :value="branch._id">
-            {{ branch.name }} — {{ branch.city }}
-          </option>
-        </select>
-        <p v-if="selectedBranch?.address" class="booking__address">
-          <i class="fa-solid fa-location-dot"></i> {{ selectedBranch.address }}
-        </p>
-      </div>
+      <fieldset class="booking__branches">
+        <legend>Elige tu sucursal</legend>
+        <label
+          v-for="branch in branches"
+          :key="branch._id"
+          class="booking__branch"
+          :class="{ 'booking__branch--on': branchId === branch._id }"
+        >
+          <input v-model="branchId" type="radio" class="visually-hidden" :value="branch._id" />
+          <i class="fa-solid fa-location-dot"></i>
+          <span>
+            <strong>{{ branch.name }}</strong>
+            <small>{{ branch.hours }}</small>
+          </span>
+        </label>
+      </fieldset>
 
-      <div class="booking__field">
-        <label for="booking-date">Fecha y hora preferida</label>
-        <input id="booking-date" v-model="scheduledFor" type="datetime-local" :min="minAt" />
-        <p class="booking__address">Agenda desde mañana; la sucursal confirma la hora exacta.</p>
-      </div>
-
-      <div class="booking__actions">
-        <button v-if="canPay" class="btn btn--primary" :disabled="!ready" @click="addToCartAndPay">
-          <i class="fa-solid fa-credit-card"></i> Reservar y pagar
-        </button>
-        <button class="btn btn--ghost" :disabled="!ready" @click="modalOpen = true">
-          Solo reservar
-        </button>
-      </div>
-    </template>
-
-    <BaseModal
-      :open="modalOpen"
-      title="Solo reservar"
-      :message="modalMessage"
-      :confirm-label="sending ? 'Enviando…' : 'Enviar reserva'"
-      @confirm="submitBooking"
-      @cancel="modalOpen = false"
-    >
-      <div class="booking__form">
-        <div class="booking__field">
-          <label for="booking-name">Nombre</label>
-          <input id="booking-name" v-model="customer.name" type="text" autocomplete="name" />
+      <template v-if="bookable">
+        <div class="booking__pair">
+          <div>
+            <label for="booking-date">{{
+              dateRange ? 'Fecha de ingreso' : 'Fecha preferida'
+            }}</label>
+            <input id="booking-date" v-model="date" type="date" :min="minDate" />
+          </div>
+          <div v-if="dateRange">
+            <label for="booking-end">Fecha de salida</label>
+            <input id="booking-end" v-model="endDate" type="date" :min="date || minDate" />
+          </div>
         </div>
-        <div class="booking__field">
+
+        <div class="booking__pair">
+          <div>
+            <label for="booking-name">Nombre y apellido *</label>
+            <input id="booking-name" v-model="customer.name" type="text" autocomplete="name" />
+          </div>
+          <div>
+            <label for="booking-phone">Teléfono *</label>
+            <input id="booking-phone" v-model="customer.phone" type="tel" autocomplete="tel" />
+          </div>
+        </div>
+        <div>
           <label for="booking-email">Correo</label>
           <input id="booking-email" v-model="customer.email" type="email" autocomplete="email" />
         </div>
-        <div class="booking__field">
-          <label for="booking-phone">Teléfono</label>
-          <input id="booking-phone" v-model="customer.phone" type="tel" autocomplete="tel" />
+        <div class="booking__pair">
+          <div>
+            <label for="booking-pet">Nombre de la mascota *</label>
+            <input id="booking-pet" v-model="pet.name" type="text" />
+          </div>
+          <div>
+            <label for="booking-species">Especie *</label>
+            <select id="booking-species" v-model="pet.species">
+              <option value="" disabled>Elige</option>
+              <option>Canino</option>
+              <option>Felino</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div>
+            <label for="booking-breed">Raza *</label>
+            <input id="booking-breed" v-model="pet.breed" type="text" />
+          </div>
         </div>
+      </template>
+
+      <div class="booking__actions">
+        <button v-if="payable" class="btn btn--primary" :disabled="!ready" @click="pay">
+          <i class="fa-solid fa-credit-card"></i> Reservar y pagar en línea
+        </button>
+        <button
+          v-if="bookable"
+          class="btn"
+          :class="payable ? 'btn--ghost' : 'btn--primary'"
+          :disabled="!ready || sending"
+          @click="book"
+        >
+          <i class="fa-solid fa-calendar-check"></i>
+          {{ sending ? 'Enviando…' : payable ? 'Solo reservar' : 'Reservar' }}
+        </button>
+        <a
+          v-if="!payable"
+          class="btn booking__whatsapp"
+          :class="{ 'booking__whatsapp--off': !selectedBranch }"
+          :href="whatsappUrl"
+          target="_blank"
+          rel="noopener"
+        >
+          <i class="fa-brands fa-whatsapp"></i> Consultar por WhatsApp
+        </a>
       </div>
-    </BaseModal>
+      <p v-if="!selectedBranch" class="booking__hint">Elige una sucursal para continuar.</p>
+    </template>
   </div>
 </template>
 
 <style scoped lang="scss">
 .booking {
-  @include card;
   @include flex(column, stretch, flex-start, 1rem);
-  background: $sand;
-  border-color: transparent;
-  padding: 1.5rem 1.4rem;
-
-  &__eyebrow {
-    @include eyebrow;
-  }
+  text-align: left;
 
   &__hint {
     @include flex(row, center, flex-start, 0.5rem);
     font-size: $text-sm;
-    color: $ink-soft;
-  }
-
-  &__field {
-    text-align: left;
-    width: 100%;
-  }
-
-  &__address {
-    @include flex(row, center, flex-start, 0.4rem);
-    font-size: $text-xs;
     color: $ink-muted;
-    margin-top: 0.4rem;
   }
 
-  &__actions {
-    @include flex(column, stretch, flex-start, 0.6rem);
-    margin-top: 0.2rem;
+  &__branches {
+    @include flex-cards(220px, 0.6rem);
+    border: none;
 
-    @include from('sm') {
-      flex-direction: row;
-      align-items: center;
+    legend {
+      @include eyebrow;
+      margin-bottom: 0.6rem;
     }
   }
 
-  &__form {
-    @include flex(column, stretch, flex-start, 0.8rem);
-    width: 100%;
-    margin-top: 0.4rem;
+  &__branch {
+    @include card;
+    @include flex(row, flex-start, flex-start, 0.6rem);
+    padding: 0.8rem 0.9rem;
+    margin: 0;
+    cursor: pointer;
+    color: $ink;
+    @include transition;
+
+    i {
+      color: $accent;
+      margin-top: 0.2rem;
+    }
+
+    strong {
+      display: block;
+      font-size: $text-sm;
+    }
+
+    small {
+      font-size: $text-xs;
+      color: $ink-muted;
+    }
+
+    &--on {
+      border-color: $accent;
+      background: $accent-soft;
+    }
+
+    &:has(:focus-visible) {
+      outline: 2px solid $accent;
+    }
+  }
+
+  &__pair {
+    @include flex-cards(150px, 0.8rem);
+  }
+
+  &__actions {
+    @include flex(row, center, flex-start, 0.6rem);
+    flex-wrap: wrap;
+    margin-top: 0.3rem;
+  }
+
+  &__whatsapp {
+    background: #1f9d57;
+    color: $surface;
+
+    &:hover {
+      background: #17804a;
+    }
+
+    &--off {
+      opacity: 0.45;
+      pointer-events: none;
+    }
   }
 }
 </style>

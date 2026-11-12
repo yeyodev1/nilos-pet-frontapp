@@ -2,7 +2,14 @@
 import { computed } from 'vue'
 import type { Product } from '@/types'
 import { formatMoney } from '@/utils/format'
-import { productCategory, productCategoryName, productIcon } from '@/utils/catalog'
+import {
+  canPayOnline,
+  finalPrice,
+  productCategory,
+  productCategoryName,
+  productIcon,
+} from '@/utils/catalog'
+import CardBuy from './CardBuy.vue'
 import PawPrint from '@/components/ui/PawPrint.vue'
 
 const props = defineProps<{ product: Product; toneSeed?: number }>()
@@ -12,8 +19,11 @@ const categoryName = computed(() => productCategoryName(props.product))
 const icon = computed(() => productIcon(props.product))
 const hasPrice = computed(() => props.product.price > 0)
 const priceLabel = computed(() =>
-  hasPrice.value ? formatMoney(props.product.price / 100) : 'Consultar precio',
+  hasPrice.value ? formatMoney(finalPrice(props.product) / 100) : 'Consultar precio',
 )
+
+// Solo los productos físicos con precio se compran desde la tarjeta.
+const buyable = computed(() => props.product.type === 'physical' && canPayOnline(props.product))
 
 // Sin fotos, la grilla vive del color: arena y rosa alternados. Con semilla
 // (la posición en la grilla) la alternancia es estricta; sin ella, decide la
@@ -39,16 +49,22 @@ const tone = computed<'sand' | 'blush'>(() => {
           <i :class="icon"></i>
         </span>
       </template>
-      <span v-if="product.type === 'service'" class="product-card__tag">Servicio</span>
+      <span v-if="product.discount > 0 && hasPrice" class="product-card__off">
+        -{{ product.discount }}%
+      </span>
+      <span v-else-if="product.type !== 'physical'" class="product-card__tag">Servicio</span>
     </div>
 
     <div class="product-card__body">
       <span class="product-card__sticker" :class="{ 'product-card__sticker--ask': !hasPrice }">
+        <s v-if="product.discount > 0 && hasPrice">{{ formatMoney(product.price / 100) }}</s>
         {{ priceLabel }}
       </span>
       <p v-if="categoryName" class="product-card__category">{{ categoryName }}</p>
       <h3 class="product-card__name">{{ product.name }}</h3>
-      <div class="product-card__foot">
+      <!-- .prevent: la tarjeta entera es un enlace al detalle. -->
+      <CardBuy v-if="buyable" :product="product" @click.prevent />
+      <div v-else class="product-card__foot">
         <span class="product-card__more">Ver producto</span>
         <span class="product-card__arrow" aria-hidden="true">
           <i class="fa-solid fa-arrow-right"></i>
@@ -150,7 +166,27 @@ const tone = computed<'sand' | 'blush'>(() => {
     border-radius: $radius-pill;
   }
 
+  // Descuento: arriba a la izquierda de la imagen, como pidió el cliente.
+  &__off {
+    position: absolute;
+    top: 0.7rem;
+    left: 0.7rem;
+    font-size: $text-sm;
+    font-weight: 700;
+    background: $danger;
+    color: $surface;
+    padding: 0.25rem 0.6rem;
+    border-radius: $radius-pill;
+  }
+
   &__sticker {
+    s {
+      font-size: 0.72rem;
+      font-weight: 400;
+      opacity: 0.7;
+      margin-right: 0.2rem;
+    }
+
     position: absolute;
     right: 0.7rem;
     top: -0.95rem;

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Branch, Product } from '@/types'
+import { finalPrice } from '@/utils/catalog'
 
 export interface CartLine {
   productId: string
@@ -47,19 +48,26 @@ export const useCartStore = defineStore('cart', {
       }
     },
 
-    add(product: Product, extra?: Partial<Pick<CartLine, 'branchId' | 'branchName' | 'scheduledFor'>>) {
+    add(
+      product: Product,
+      extra?: Partial<Pick<CartLine, 'branchId' | 'branchName' | 'scheduledFor'>>,
+      qty = 1,
+    ) {
       const existing = this.lines.find((l) => l.productId === product._id)
       if (existing && product.type === 'physical') {
-        existing.qty += 1
-      } else if (!existing) {
+        existing.qty = Math.min(99, existing.qty + qty)
+      } else if (existing) {
+        // Un servicio va una sola vez: volver a agregarlo cambia su reserva.
+        Object.assign(existing, extra)
+      } else {
         this.lines.push({
           productId: product._id,
           slug: product.slug,
           name: product.name,
-          price: product.price,
+          price: finalPrice(product),
           type: product.type,
           image: product.images[0]?.url || '',
-          qty: 1,
+          qty: product.type === 'physical' ? qty : 1,
           ...extra,
         })
       }

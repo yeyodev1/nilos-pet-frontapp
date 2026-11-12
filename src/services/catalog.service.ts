@@ -1,5 +1,5 @@
 import APIBase from './httpBase'
-import type { Branch, Category, Paginated, Product, ProductType } from '@/types'
+import type { Banner, Branch, Category, Paginated, Product, ProductType, Review } from '@/types'
 
 export interface ProductListParams {
   search?: string
@@ -38,6 +38,22 @@ class CatalogService extends APIBase {
 
   async getBranches(): Promise<Branch[]> {
     const { data } = await this.get<Branch[]>('branches')
+    return data
+  }
+
+  async getBanners(): Promise<Banner[]> {
+    const { data } = await this.get<Banner[]>('banners')
+    return data
+  }
+
+  async getReviews(): Promise<Review[]> {
+    const { data } = await this.get<Review[]>('reviews')
+    return data
+  }
+
+  /** Requiere sesión. Una reseña por cuenta: reenviar la reemplaza. */
+  async sendReview(input: { rating: number; text: string }): Promise<Review> {
+    const { data } = await this.post<Review>('reviews', input)
     return data
   }
 }

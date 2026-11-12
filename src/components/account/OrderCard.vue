@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { formatDate, formatMoney } from '@/utils/format'
-import { formatDateTime } from '@/utils/datetime'
 import { ORDER_STATUS } from '@/composables/useMyOrders'
 import type { Order, OrderItem } from '@/types'
 
@@ -22,7 +21,12 @@ function branchName(item: OrderItem): string {
 
 <template>
   <article class="order" :class="{ 'order--open': expanded }">
-    <button class="order__head" type="button" :aria-expanded="expanded" @click="expanded = !expanded">
+    <button
+      class="order__head"
+      type="button"
+      :aria-expanded="expanded"
+      @click="expanded = !expanded"
+    >
       <div class="order__id">
         <span class="order__number">Pedido #{{ order.number }}</span>
         <span class="order__date">{{ formatDate(order.createdAt) }}</span>
@@ -45,9 +49,12 @@ function branchName(item: OrderItem): string {
             <span class="order__item-name">{{ item.name }}</span>
             <span v-if="item.scheduledFor" class="order__item-booking">
               <i class="fa-solid fa-location-dot"></i>
-              {{ branchName(item) || 'Sucursal por confirmar' }} · {{ formatDateTime(item.scheduledFor) }}
+              {{ branchName(item) || 'Sucursal por confirmar' }} ·
+              {{ formatDate(item.scheduledFor) }}
             </span>
-            <span v-if="item.qty > 1" class="order__item-qty">{{ item.qty }} × {{ formatMoney(item.price / 100) }}</span>
+            <span v-if="item.qty > 1" class="order__item-qty"
+              >{{ item.qty }} × {{ formatMoney(item.price / 100) }}</span
+            >
           </div>
           <span class="order__item-amount">{{ formatMoney((item.price * item.qty) / 100) }}</span>
         </li>

@@ -28,6 +28,24 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: 'Servicios veterinarios' },
   },
   {
+    path: '/quienes-somos',
+    name: 'About',
+    component: () => import('@/views/AboutView.vue'),
+    meta: { title: 'Quiénes somos' },
+  },
+  {
+    path: '/examenes',
+    name: 'Exams',
+    component: () => import('@/views/ExamsView.vue'),
+    meta: { title: 'Exámenes' },
+  },
+  {
+    path: '/sucursales',
+    name: 'Branches',
+    component: () => import('@/views/BranchesView.vue'),
+    meta: { title: 'Sucursales' },
+  },
+  {
     path: '/resultados',
     name: 'ExamResults',
     component: () => import('@/views/ExamResultsView.vue'),
@@ -99,6 +117,18 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: 'Sucursales' },
       },
       {
+        path: 'banners',
+        name: 'AdminBanners',
+        component: () => import('@/views/admin/AdminBannersView.vue'),
+        meta: { title: 'Banners' },
+      },
+      {
+        path: 'resenas',
+        name: 'AdminReviews',
+        component: () => import('@/views/admin/AdminReviewsView.vue'),
+        meta: { title: 'Reseñas' },
+      },
+      {
         path: 'ordenes',
         name: 'AdminOrders',
         component: () => import('@/views/admin/AdminOrdersView.vue'),
@@ -137,9 +167,14 @@ const router = createRouter({
   routes,
   // Con "atrás" el navegador devuelve la posición guardada; con un hash se
   // baja a la sección; si no, arriba.
-  scrollBehavior(to, _from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
-    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+    if (to.hash) {
+      const target = { el: to.hash, top: 90, behavior: 'smooth' as const }
+      if (to.path === from.path) return target
+      // Viniendo de otra página la sección aún no existe: espera a la transición.
+      return new Promise((resolve) => setTimeout(() => resolve(target), 400))
+    }
     return { left: 0, top: 0 }
   },
 })

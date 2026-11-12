@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useBackLink } from '@/composables/useBackLink'
 import { site, whatsappLink } from '@/config/site'
 import { catalogService } from '@/services/catalog.service'
 import { useCartStore } from '@/stores/cart'
 import { useToastStore } from '@/stores/toast'
 import { formatMoney } from '@/utils/format'
-import { productCategoryName, productIcon } from '@/utils/catalog'
+import { canPayOnline, finalPrice, productCategoryName, productIcon } from '@/utils/catalog'
 import ServiceBooking from '@/components/catalog/ServiceBooking.vue'
 import type { Product } from '@/types'
 
@@ -40,17 +41,14 @@ watch(
 )
 
 const image = computed(() => product.value?.images[0]?.url || '')
-const categoryName = computed(() => (product.value ? productCategoryName(product.value) : ''))
-const icon = computed(() => (product.value ? productIcon(product.value) : 'fa-solid fa-paw'))
 
-const isBookableService = computed(
-  () => product.value?.type === 'service' && Boolean(product.value?.bookable),
-)
-// Físicos con precio van directo al carrito; también un servicio con precio
-// que no se reserva por sucursal.
+// Servicios y exámenes se resuelven con sucursal: reserva, pago o WhatsApp.
+const isService = computed(() => Boolean(product.value) && product.value?.type !== 'physical')
 const canAddToCart = computed(
-  () => Boolean(product.value && product.value.price > 0) && !isBookableService.value,
+  () => Boolean(product.value && canPayOnline(product.value)) && !isService.value,
 )
+
+const { backTo, goBack } = useBackLink(product)
 
 function addToCart() {
   if (!product.value) return
@@ -76,22 +74,24 @@ function addToCart() {
     </div>
 
     <template v-else>
-      <RouterLink to="/tienda" class="product__back">
-        <i class="fa-solid fa-arrow-left"></i> Volver a la tienda
-      </RouterLink>
+      <a :href="backTo.to" class="product__back" @click.prevent="goBack">
+        <i class="fa-solid fa-arrow-left"></i> {{ backTo.label }}
+      </a>
 
       <div class="product__layout">
         <div class="product__media">
           <img v-if="image" :src="image" :alt="product.name" />
-          <span v-else class="product__placeholder" aria-hidden="true"><i :class="icon"></i></span>
+          <span v-else class="product__placeholder" aria-hidden="true"><i :class="productIcon(product)"></i></span>
         </div>
 
         <div class="product__info">
-          <p v-if="categoryName" class="product__category">{{ categoryName }}</p>
+          <p class="product__category">{{ productCategoryName(product) }}</p>
           <h1 class="product__name">{{ product.name }}</h1>
 
           <p v-if="product.price > 0" class="product__price">
-            {{ formatMoney(product.price / 100) }}
+            <template v-if="product.priceFrom">Desde </template>
+            {{ formatMoney(finalPrice(product) / 100) }}
+            <s v-if="product.discount > 0">{{ formatMoney(product.price / 100) }}</s>
           </p>
 
           <p v-if="product.description" class="product__description">{{ product.description }}</p>
@@ -102,7 +102,7 @@ function addToCart() {
             </button>
           </div>
 
-          <ServiceBooking v-else-if="isBookableService" :product="product" />
+          <ServiceBooking v-else-if="isService" :products="[product]" />
 
           <div v-else class="product__consult">
             <button class="btn btn--ghost" disabled>Consultar precio</button>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, toRef } from 'vue'
 import AdminFormModal from './AdminFormModal.vue'
-import { useAdminProductForm } from '@/composables/useAdminProductForm'
+import { serviceFlags, useAdminProductForm } from '@/composables/useAdminProductForm'
 import type { Category, Product } from '@/types'
 
 const props = defineProps<{
@@ -72,6 +72,7 @@ function onRemoveImage(publicId: string) {
           <select id="pform-type" v-model="form.type">
             <option value="physical">Producto físico</option>
             <option value="service">Servicio</option>
+            <option value="exam">Examen</option>
           </select>
         </div>
         <div class="pform__field">
@@ -96,9 +97,22 @@ function onRemoveImage(publicId: string) {
             placeholder="0.00"
           />
         </div>
-        <label v-if="form.type === 'service'" class="pform__check">
-          <input v-model="form.bookable" type="checkbox" />
-          <span>Se reserva en sucursal</span>
+        <div class="pform__field">
+          <label for="pform-discount">Descuento (%)</label>
+          <input
+            id="pform-discount"
+            v-model="form.discount"
+            type="text"
+            inputmode="numeric"
+            placeholder="0"
+          />
+        </div>
+      </div>
+
+      <div v-if="form.type !== 'physical'" class="pform__flags">
+        <label v-for="flag in serviceFlags" :key="flag.key" class="pform__check">
+          <input v-model="form[flag.key]" type="checkbox" />
+          <span>{{ flag.label }}</span>
         </label>
       </div>
 

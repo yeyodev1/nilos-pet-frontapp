@@ -10,8 +10,8 @@ export const site = {
     'Nilos Pet — veterinaria con tienda en línea: alimento, medicinas y accesorios, exámenes médicos con resultados en línea y reservas por sucursal.',
   url: 'https://dev-nilos-pet-front.bakano.ec',
   email: '',
-  // Solo dígitos con código de país, ej: 593984934039 (pendiente: confirmar con el cliente)
-  whatsapp: '',
+  // WhatsApp de la matriz (Mucho Lote 1). Cada sucursal usa además el suyo.
+  whatsapp: '593997357977',
   social: {
     instagram: '',
     facebook: '',
@@ -19,10 +19,32 @@ export const site = {
   },
   nav: [
     { label: 'Inicio', to: '/' },
-    { label: 'Tienda', to: '/tienda' },
+    {
+      label: 'Quiénes somos',
+      to: '/quienes-somos',
+      children: [
+        { label: 'Historia', to: '/quienes-somos#historia' },
+        { label: 'Misión y visión', to: '/quienes-somos#mision' },
+        { label: 'Principios y virtudes', to: '/quienes-somos#principios' },
+        { label: 'Diferenciales', to: '/quienes-somos#diferenciales' },
+      ],
+    },
+    { label: 'Tienda en línea', to: '/tienda' },
     { label: 'Servicios', to: '/servicios' },
-    { label: 'Resultados', to: '/resultados' },
-  ],
+    {
+      label: 'Exámenes',
+      to: '/examenes',
+      children: [
+        { label: 'Pago en línea', to: '/examenes' },
+        { label: 'Resultados', to: '/resultados' },
+      ],
+    },
+    { label: 'Sucursales', to: '/sucursales' },
+  ] as NavLink[],
+  // Slugs de categoría: agrupan la página de servicios y la de exámenes, y por
+  // eso no salen como filtro de la tienda.
+  serviceGroups: ['estetica-y-spa', 'medicina-y-prevencion', 'urgencias-y-cuidados'],
+  examGroups: ['pruebas-rapidas', 'examenes-de-sangre', 'imagenes'],
   hero: {
     eyebrow: 'Veterinaria y tienda en línea',
     // Las partes en cursiva son el acento tipográfico de la marca.
@@ -38,8 +60,8 @@ export const site = {
     ctaPrimary: 'Ver la tienda',
     ctaSecondary: 'Consultar resultados',
     stats: [
-      { value: 399, suffix: '+', label: 'productos' },
-      { value: 14, suffix: '', label: 'categorías' },
+      { value: 390, suffix: '+', label: 'productos' },
+      { value: 24, suffix: '', label: 'servicios' },
       { value: 2, suffix: '', label: 'sucursales' },
     ],
     stickerTop: '¡Hola!',
@@ -108,7 +130,7 @@ export const site = {
       { text: 'mimos', italic: true },
       { text: ' con reserva' },
     ],
-    text: 'Exámenes médicos, radiografías, peluquería y vacunación. Eliges el servicio, reservas en tu sucursal y pagas en línea o en el local.',
+    text: 'Spa, consulta, vacunas, cirugía y hospedaje sin jaulas. Eliges el servicio, reservas en tu sucursal y pagas en línea o en el local.',
     cta: 'Reservar un servicio',
   },
   pillars: [
@@ -128,6 +150,50 @@ export const site = {
       text: 'Consulta los resultados de los exámenes de tu mascota con tu número de cédula, sin ir al local.',
     },
   ],
+  servicesPage: {
+    eyebrow: 'Servicios',
+    title: '¿Qué necesita tu mascota hoy?',
+    subtitle:
+      'Servicios clínicos, de estética y prevención. Elige tu sucursal y reserva, paga en línea o escríbenos por WhatsApp, según el servicio.',
+    all: 'Todos los servicios',
+    flow: [
+      { icon: 'fa-solid fa-list-check', label: 'Elige el servicio' },
+      { icon: 'fa-solid fa-location-dot', label: 'Elige tu sucursal y fecha' },
+      { icon: 'fa-solid fa-credit-card', label: 'Reserva, paga o consulta' },
+    ],
+  },
+  branchesPage: {
+    eyebrow: 'Servicios veterinarios',
+    title: 'Nuestras sucursales',
+    subtitle: 'Elige tu local más cercano y contáctanos directamente por WhatsApp.',
+    contact: 'Contáctanos',
+    directions: 'Cómo llegar',
+  },
+  reviews: {
+    eyebrow: 'Reseñas',
+    titleParts: [
+      { text: 'Lo que dicen las ' },
+      { text: 'familias', italic: true },
+      { text: ' Nilos' },
+    ],
+    empty: 'Sé la primera persona en contarnos cómo le fue a tu mascota.',
+    formTitle: 'Cuéntanos tu experiencia',
+    placeholder: '¿Cómo atendimos a tu mascota?',
+    loginCta: 'Ingresa para dejar tu reseña',
+    register: {
+      consent:
+        'Acepto el tratamiento de mis datos personales para gestionar mi cuenta, mis reservas y los resultados de mi mascota.',
+    },
+  },
+  examsPage: {
+    eyebrow: 'Exámenes',
+    title: 'Arma la orden de exámenes',
+    subtitle:
+      'Marca los exámenes que necesita tu mascota, elige sucursal y fecha para la toma de muestra y paga en línea. Los resultados se consultan después con tu cédula.',
+    all: 'Todos',
+    resultsCta: 'Consultar resultados',
+    unpricedNote: 'Hay exámenes sin precio en línea: se reservan y se pagan en la sucursal.',
+  },
   catalog: {
     eyebrow: 'La tienda',
     titleParts: [{ text: 'Todo para tu ' }, { text: 'mascota', italic: true }],
@@ -154,7 +220,15 @@ export const site = {
   footerNote: 'Nilos Pet — Servicios veterinarios.',
 } as const
 
-export function whatsappLink(message = 'Hola, quiero más información'): string {
-  if (!site.whatsapp) return '#'
-  return `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(message)}`
+export interface NavLink {
+  label: string
+  to: string
+  children?: { label: string; to: string }[]
+}
+
+/** phone: el de una sucursal ("+593 99…"); sin él se usa el de la matriz. */
+export function whatsappLink(message = 'Hola, quiero más información', phone = ''): string {
+  const digits = phone.replace(/\D/g, '') || site.whatsapp
+  if (!digits) return '#'
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
 }

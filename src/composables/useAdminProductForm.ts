@@ -3,6 +3,14 @@ import { adminService } from '@/services/admin.service'
 import { useToastStore } from '@/stores/toast'
 import type { ApiError, Product, ProductImage, ProductType } from '@/types'
 
+/** Casillas que solo aplican a servicios y exámenes. */
+export const serviceFlags = [
+  { key: 'bookable', label: 'Se reserva en sucursal' },
+  { key: 'payOnline', label: 'Se paga en línea' },
+  { key: 'priceFrom', label: 'Precio «desde» (solo reserva o WhatsApp)' },
+  { key: 'dateRange', label: 'Reserva por rango de fechas' },
+] as const
+
 /**
  * Estado del modal de crear/editar producto: formulario, conversión
  * dólares ↔ centavos y el ciclo de imágenes (preview local → subir → borrar).
@@ -27,6 +35,11 @@ export function useAdminProductForm(
     price: '',
     description: '',
     bookable: false,
+    /** Porcentaje entero, como texto del input. */
+    discount: '',
+    priceFrom: false,
+    payOnline: true,
+    dateRange: false,
     isPublished: false,
     isFeatured: false,
   })
@@ -40,6 +53,10 @@ export function useAdminProductForm(
     form.price = product && product.price > 0 ? (product.price / 100).toFixed(2) : ''
     form.description = product?.description || ''
     form.bookable = product?.bookable || false
+    form.discount = product?.discount ? String(product.discount) : ''
+    form.priceFrom = product?.priceFrom || false
+    form.payOnline = product?.payOnline ?? true
+    form.dateRange = product?.dateRange || false
     form.isPublished = product?.isPublished || false
     form.isFeatured = product?.isFeatured || false
     clearFile()
@@ -73,15 +90,26 @@ export function useAdminProductForm(
       return
     }
 
+    const discount = Number(form.discount || 0)
+    if (!Number.isInteger(discount) || discount < 0 || discount > 90) {
+      toastStore.error('El descuento es un porcentaje entero entre 0 y 90')
+      return
+    }
+
     saving.value = true
     try {
+      const isService = form.type !== 'physical'
       const base = {
         name: form.name.trim(),
         type: form.type,
         category: form.category || undefined,
         price: cents,
         description: form.description.trim(),
-        bookable: form.type === 'service' && form.bookable,
+        bookable: isService && form.bookable,
+        discount,
+        priceFrom: isService && form.priceFrom,
+        payOnline: !isService || form.payOnline,
+        dateRange: isService && form.dateRange,
       }
       if (current.value) {
         await adminService.updateProduct(current.value._id, {

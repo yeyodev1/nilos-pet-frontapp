@@ -18,7 +18,14 @@ export interface SessionUser {
   email: string
   name: string
   phone: string
+  pet?: Pet & { age: string }
   accountType: 'customer' | 'admin' | string
+}
+
+export interface Pet {
+  name: string
+  species: string
+  breed: string
 }
 
 // ─── Catálogo ───────────────────────────────────────────────────────────
@@ -30,7 +37,7 @@ export interface Category {
   order: number
 }
 
-export type ProductType = 'physical' | 'service'
+export type ProductType = 'physical' | 'service' | 'exam'
 
 export interface ProductImage {
   url: string
@@ -52,6 +59,13 @@ export interface Product {
   isFeatured: boolean
   /** Solo servicios: se reserva en una sucursal. */
   bookable: boolean
+  /** Porcentaje de descuento (0-90) sobre price. */
+  discount: number
+  /** El precio es un "desde": no se cobra en línea. */
+  priceFrom: boolean
+  payOnline: boolean
+  /** La reserva pide fecha de ingreso y de salida (hospedaje). */
+  dateRange: boolean
   createdAt?: string
 }
 
@@ -62,7 +76,26 @@ export interface Branch {
   city: string
   phone: string
   mapsUrl: string
+  /** "lat,lng" para el mapa embebido. */
+  coords: string
+  hours: string
+  image: string
   isActive: boolean
+}
+
+export interface Banner {
+  _id: string
+  title: string
+  link: string
+  image: ProductImage
+}
+
+export interface Review {
+  _id: string
+  name: string
+  rating: number
+  text: string
+  updatedAt: string
 }
 
 // ─── Órdenes y pago (Cajita de Payphone) ────────────────────────────────
@@ -145,7 +178,9 @@ export interface Booking {
   branch: string | Branch
   order: string | null
   customer: { name: string; email: string; phone: string }
+  pet?: Pet
   preferredAt: string
+  preferredEnd?: string | null
   status: BookingStatus
   notes: string
   createdAt: string
@@ -155,7 +190,9 @@ export interface CreateBookingInput {
   productId: string
   branchId: string
   customer: { name: string; email: string; phone: string }
+  pet: Pet
   preferredAt: string
+  preferredEnd?: string
   notes?: string
 }
 

@@ -20,6 +20,8 @@ const { categories, products, loading, error, search, category, page, pages, tot
 
 // Los filtros viven también en la URL: compartir el enlace conserva la búsqueda.
 watch([search, category], ([q, cat]) => {
+  // KeepAlive: la tienda sigue viva en otra ruta y no debe tocar su URL.
+  if (route.name !== 'Catalog') return
   const query: Record<string, string> = {}
   if (q.trim()) query.q = q.trim()
   if (cat) query.category = cat
@@ -30,6 +32,7 @@ watch([search, category], ([q, cat]) => {
 watch(
   () => route.query,
   (query) => {
+    if (route.name !== 'Catalog') return
     const q = typeof query.q === 'string' ? query.q : ''
     const cat = typeof query.category === 'string' ? query.category : ''
     if (q !== search.value.trim()) search.value = q

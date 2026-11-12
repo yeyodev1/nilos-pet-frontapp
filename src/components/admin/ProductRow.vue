@@ -57,7 +57,7 @@ const categoryName = computed(() => {
         <span class="atable__meta">
           {{ product.code }}
           <template v-if="categoryName"> · {{ categoryName }}</template>
-          · {{ product.type === 'service' ? 'Servicio' : 'Físico' }}
+          · {{ { physical: 'Físico', service: 'Servicio', exam: 'Examen' }[product.type] }}
         </span>
       </div>
     </div>

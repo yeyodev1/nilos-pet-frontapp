@@ -7,7 +7,10 @@ import StatusPill from '@/components/admin/StatusPill.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import { useAdminCrud } from '@/composables/useAdminCrud'
 import { adminService, type BranchInput } from '@/services/admin.service'
-import type { Branch } from '@/types'
+import { useToastStore } from '@/stores/toast'
+import type { ApiError, Branch } from '@/types'
+
+const toast = useToastStore()
 
 const crud = useAdminCrud<Branch, BranchInput>(
   {
@@ -29,8 +32,24 @@ const form = reactive<BranchInput>({
   city: '',
   phone: '',
   mapsUrl: '',
+  coords: '',
+  hours: '',
   isActive: true,
 })
+
+/** La foto se sube aparte, sobre una sucursal que ya existe. */
+async function uploadCover(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file || !crud.editing.value) return
+  try {
+    await adminService.uploadBranchImage(crud.editing.value._id, file)
+    toast.success('Foto de portada actualizada')
+    crud.closeModal()
+    await crud.load()
+  } catch (e) {
+    toast.error((e as ApiError).message)
+  }
+}
 
 function fillForm(branch?: Branch) {
   form.name = branch?.name || ''
@@ -38,6 +57,8 @@ function fillForm(branch?: Branch) {
   form.city = branch?.city || ''
   form.phone = branch?.phone || ''
   form.mapsUrl = branch?.mapsUrl || ''
+  form.coords = branch?.coords || ''
+  form.hours = branch?.hours || ''
   form.isActive = branch ? branch.isActive : true
 }
 
@@ -148,13 +169,32 @@ function submit() {
             <input id="br-city" v-model="form.city" type="text" placeholder="Ej.: Guayaquil" />
           </div>
           <div>
-            <label for="br-phone">Teléfono</label>
-            <input id="br-phone" v-model="form.phone" type="tel" placeholder="Ej.: 0999999999" />
+            <label for="br-phone">WhatsApp</label>
+            <input
+              id="br-phone"
+              v-model="form.phone"
+              type="tel"
+              placeholder="Ej.: +593 999999999"
+            />
           </div>
         </div>
         <div>
           <label for="br-maps">Link de Google Maps</label>
           <input id="br-maps" v-model="form.mapsUrl" type="url" placeholder="https://maps.app…" />
+        </div>
+        <div class="branches__pair">
+          <div>
+            <label for="br-hours">Horario de atención</label>
+            <input id="br-hours" v-model="form.hours" type="text" />
+          </div>
+          <div>
+            <label for="br-coords">Coordenadas del mapa (lat,lng)</label>
+            <input id="br-coords" v-model="form.coords" type="text" placeholder="-2.17,-79.91" />
+          </div>
+        </div>
+        <div v-if="crud.editing.value">
+          <label for="br-cover">Foto de portada</label>
+          <input id="br-cover" type="file" accept="image/*" @change="uploadCover" />
         </div>
         <label class="branches__check">
           <input v-model="form.isActive" type="checkbox" />

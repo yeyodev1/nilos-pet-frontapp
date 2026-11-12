@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useCartStore } from '@/stores/cart'
-import { formatMoney } from '@/utils/format'
-import { formatDateTime } from '@/utils/datetime'
+import { formatDate, formatMoney } from '@/utils/format'
 import OrderSummary from '@/components/checkout/OrderSummary.vue'
 import type { SummaryLine } from '@/components/checkout/OrderSummary.vue'
 
@@ -45,10 +44,10 @@ const summaryLines = computed<SummaryLine[]>(() =>
           <div class="cart__body">
             <RouterLink :to="`/producto/${line.slug}`" class="cart__name">{{ line.name }}</RouterLink>
             <p class="cart__unit">{{ formatMoney(line.price / 100) }} c/u</p>
-            <p v-if="line.type === 'service' && line.branchName" class="cart__booking">
+            <p v-if="line.type !== 'physical' && line.branchName" class="cart__booking">
               <i class="fa-solid fa-location-dot"></i>
               {{ line.branchName }}
-              <template v-if="line.scheduledFor"> · {{ formatDateTime(line.scheduledFor) }}</template>
+              <template v-if="line.scheduledFor"> · {{ formatDate(line.scheduledFor) }}</template>
             </p>
           </div>
 

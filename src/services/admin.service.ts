@@ -1,5 +1,6 @@
 import APIBase from './httpBase'
 import type {
+  Banner,
   Booking,
   BookingStatus,
   Branch,
@@ -9,6 +10,7 @@ import type {
   Paginated,
   Product,
   ProductType,
+  Review,
   SessionUser,
 } from '@/types'
 
@@ -57,6 +59,10 @@ export interface ProductInput {
   price: number
   description: string
   bookable: boolean
+  discount: number
+  priceFrom: boolean
+  payOnline: boolean
+  dateRange: boolean
 }
 
 export type ProductPatch = Partial<ProductInput & { isPublished: boolean; isFeatured: boolean }>
@@ -72,6 +78,8 @@ export interface BranchInput {
   city: string
   phone: string
   mapsUrl: string
+  coords: string
+  hours: string
   isActive: boolean
 }
 
@@ -169,6 +177,43 @@ class AdminService extends APIBase {
   /** El backend no borra: desactiva la sucursal. */
   async deleteBranch(id: string): Promise<void> {
     await this.delete(`admin/branches/${id}`)
+  }
+
+  async uploadBranchImage(id: string, file: File): Promise<Branch> {
+    const form = new FormData()
+    form.append('image', file)
+    const { data } = await this.post<Branch>(`admin/branches/${id}/image`, form)
+    return data
+  }
+
+  // ─── Banners y reseñas ─────────────────────────────────────────────────
+
+  async listBanners(): Promise<Banner[]> {
+    const { data } = await this.get<Banner[]>('admin/banners')
+    return data
+  }
+
+  async createBanner(input: { file: File; title: string; link: string }): Promise<Banner> {
+    const form = new FormData()
+    form.append('image', input.file)
+    form.append('title', input.title)
+    form.append('link', input.link)
+    // Un GIF pesado tarda más que el timeout por defecto.
+    const { data } = await this.post<Banner>('admin/banners', form, undefined, { timeout: 60000 })
+    return data
+  }
+
+  async deleteBanner(id: string): Promise<void> {
+    await this.delete(`admin/banners/${id}`)
+  }
+
+  async listReviews(): Promise<Review[]> {
+    const { data } = await this.get<Review[]>('admin/reviews')
+    return data
+  }
+
+  async deleteReview(id: string): Promise<void> {
+    await this.delete(`admin/reviews/${id}`)
   }
 
   // ─── Órdenes ───────────────────────────────────────────────────────────

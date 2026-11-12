@@ -12,6 +12,8 @@ const sections = [
   { label: 'Productos', to: '/admin/productos', icon: 'fa-solid fa-box-open' },
   { label: 'Categorías', to: '/admin/categorias', icon: 'fa-solid fa-tags' },
   { label: 'Sucursales', to: '/admin/sucursales', icon: 'fa-solid fa-location-dot' },
+  { label: 'Banners', to: '/admin/banners', icon: 'fa-solid fa-rectangle-ad' },
+  { label: 'Reseñas', to: '/admin/resenas', icon: 'fa-solid fa-star' },
   { label: 'Órdenes', to: '/admin/ordenes', icon: 'fa-solid fa-receipt' },
   { label: 'Reservas', to: '/admin/reservas', icon: 'fa-solid fa-calendar-check' },
   { label: 'Resultados', to: '/admin/resultados', icon: 'fa-solid fa-file-waveform' },

@@ -1,50 +1,77 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { whatsappLink } from '@/config/site'
 import { catalogService } from '@/services/catalog.service'
 import { bookingService } from '@/services/booking.service'
 import { useCartStore } from '@/stores/cart'
 import { useToastStore } from '@/stores/toast'
+import { useUserStore } from '@/stores/user'
+import { canPayOnline } from '@/utils/catalog'
 import type { ApiError, Branch, Product } from '@/types'
 
-function toLocalInput(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const fecha = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
-  return `${fecha}T${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
+/** Solo fecha: la hora la confirma la sucursal. Mediodía de Guayaquil evita saltos de día. */
+const toIso = (day: string) => `${day}T12:00:00-05:00`
 
 /**
- * Lógica de reserva de un servicio: sucursal + fecha preferida, con dos
- * salidas — pagar en línea (carrito) o solo reservar (POST /bookings).
+ * Reserva de uno o varios servicios/exámenes en una sucursal, con tres salidas
+ * según lo que permita cada uno: pagar en línea (carrito), solo reservar
+ * (POST /bookings) o consultar por WhatsApp a la sucursal elegida.
  */
-export function useServiceBooking(getProduct: () => Product) {
+export function useServiceBooking(getProducts: () => Product[], onDone: () => void = () => {}) {
   const router = useRouter()
   const cartStore = useCartStore()
   const toast = useToastStore()
+  const userStore = useUserStore()
 
   const branches = ref<Branch[]>([])
   const loadingBranches = ref(true)
   const branchId = ref('')
-  const scheduledFor = ref('')
+  const date = ref('')
+  const endDate = ref('')
+  const sending = ref(false)
 
-  // La cita más próxima posible: mañana a las 09:00.
-  const minAt = (() => {
-    const d = new Date()
-    d.setDate(d.getDate() + 1)
-    d.setHours(9, 0, 0, 0)
-    return toLocalInput(d)
-  })()
+  const user = userStore.user
+  const customer = reactive({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+  })
+  const pet = reactive({
+    name: user?.pet?.name || '',
+    species: user?.pet?.species || '',
+    breed: user?.pet?.breed || '',
+  })
+
+  // La cita más próxima posible: mañana.
+  const minDate = new Date(Date.now() + 86_400_000).toLocaleDateString('en-CA')
+
+  const bookable = computed(() => getProducts().every((p) => p.bookable))
+  const payable = computed(() => bookable.value && getProducts().every(canPayOnline))
+  const dateRange = computed(() => getProducts().some((p) => p.dateRange))
+  const names = computed(() =>
+    getProducts()
+      .map((p) => p.name)
+      .join(', '),
+  )
 
   const selectedBranch = computed(
     () => branches.value.find((b) => b._id === branchId.value) || null,
   )
-  const ready = computed(() =>
-    Boolean(selectedBranch.value && scheduledFor.value && scheduledFor.value >= minAt),
+  const datesReady = computed(
+    () => date.value >= minDate && (!dateRange.value || endDate.value >= date.value),
+  )
+  const ready = computed(() => Boolean(selectedBranch.value) && datesReady.value)
+
+  const whatsappUrl = computed(() =>
+    whatsappLink(
+      `Hola, quiero información sobre: ${names.value} (${selectedBranch.value?.name || ''})`,
+      selectedBranch.value?.phone,
+    ),
   )
 
   onMounted(async () => {
     try {
-      branches.value = (await catalogService.getBranches()).filter((b) => b.isActive)
-      if (branches.value.length === 1) branchId.value = branches.value[0]?._id || ''
+      branches.value = await catalogService.getBranches()
     } catch {
       branches.value = []
     } finally {
@@ -52,53 +79,56 @@ export function useServiceBooking(getProduct: () => Product) {
     }
   })
 
-  function addToCartAndPay() {
+  /** Pago en línea: la reserva se crea sola cuando Payphone aprueba el pago. */
+  function pay() {
     const branch = selectedBranch.value
     if (!branch || !ready.value) return
-    cartStore.add(getProduct(), {
-      branchId: branch._id,
-      branchName: branch.name,
-      scheduledFor: scheduledFor.value,
-    })
+    for (const product of getProducts()) {
+      cartStore.add(product, {
+        branchId: branch._id,
+        branchName: branch.name,
+        scheduledFor: toIso(date.value),
+      })
+    }
     toast.success('Reserva agregada al carrito')
+    onDone()
     router.push('/carrito')
   }
 
-  // ─── Solo reservar (sin pago) ─────────────────────────────────────────
-  const modalOpen = ref(false)
-  const sending = ref(false)
-  const customer = ref({ name: '', email: '', phone: '' })
+  function missingData(): string {
+    if (customer.name.trim().split(/\s+/).length < 2) return 'Escribe tu nombre y apellido'
+    if (customer.phone.replace(/\D/g, '').length < 7) return 'Escribe un teléfono válido'
+    if (!pet.name.trim() || !pet.species || !pet.breed.trim()) {
+      return 'Completa el nombre, la especie y la raza de tu mascota'
+    }
+    return ''
+  }
 
-  const customerReady = computed(() => {
-    const { name, email, phone } = customer.value
-    return (
-      name.trim().length >= 3 &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
-      phone.trim().replace(/\D/g, '').length >= 7
-    )
-  })
-
-  async function submitBooking() {
+  async function book() {
     if (!ready.value || sending.value) return
-    if (!customerReady.value) {
-      toast.error('Completa tu nombre, correo y teléfono para enviar la reserva')
+    const missing = missingData()
+    if (missing) {
+      toast.error(missing)
       return
     }
     sending.value = true
     try {
-      await bookingService.create({
-        productId: getProduct()._id,
-        branchId: branchId.value,
-        customer: {
-          name: customer.value.name.trim(),
-          email: customer.value.email.trim(),
-          phone: customer.value.phone.trim(),
-        },
-        preferredAt: new Date(scheduledFor.value).toISOString(),
-      })
-      modalOpen.value = false
-      customer.value = { name: '', email: '', phone: '' }
+      for (const product of getProducts()) {
+        await bookingService.create({
+          productId: product._id,
+          branchId: branchId.value,
+          customer: {
+            name: customer.name.trim(),
+            email: customer.email.trim(),
+            phone: customer.phone.trim(),
+          },
+          pet: { name: pet.name.trim(), species: pet.species, breed: pet.breed.trim() },
+          preferredAt: toIso(date.value),
+          ...(dateRange.value ? { preferredEnd: toIso(endDate.value) } : {}),
+        })
+      }
       toast.success('Reserva enviada. Te contactaremos para confirmar la cita.')
+      onDone()
     } catch (e) {
       toast.error((e as ApiError).message)
     } finally {
@@ -110,15 +140,19 @@ export function useServiceBooking(getProduct: () => Product) {
     branches,
     loadingBranches,
     branchId,
-    scheduledFor,
-    minAt,
+    date,
+    endDate,
+    minDate,
+    customer,
+    pet,
+    bookable,
+    payable,
+    dateRange,
     selectedBranch,
     ready,
-    addToCartAndPay,
-    modalOpen,
     sending,
-    customer,
-    customerReady,
-    submitBooking,
+    whatsappUrl,
+    pay,
+    book,
   }
 }

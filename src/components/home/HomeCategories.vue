@@ -15,7 +15,10 @@ const { init, refresh } = useGsapReveal(root)
 // Si el API no responde, la sección simplemente no existe.
 onMounted(async () => {
   try {
-    categories.value = await catalogService.getCategories()
+    const hidden: string[] = [...site.serviceGroups, ...site.examGroups, 'servicios-veterinarios']
+    categories.value = (await catalogService.getCategories()).filter(
+      (cat) => !hidden.includes(cat.slug),
+    )
   } catch {
     categories.value = []
   } finally {

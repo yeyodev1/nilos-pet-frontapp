@@ -5,6 +5,16 @@ export function productCategory(product: Product): Category | null {
   return product.category && typeof product.category === 'object' ? product.category : null
 }
 
+/** Centavos que se cobran, con el descuento aplicado. Espeja finalPrice del backapp. */
+export function finalPrice(product: Pick<Product, 'price' | 'discount'>): number {
+  return Math.round((product.price * (100 - (product.discount || 0))) / 100)
+}
+
+/** Se puede pagar en línea: tiene precio fijo y el local lo permite. */
+export function canPayOnline(product: Product): boolean {
+  return product.price > 0 && !product.priceFrom && product.payOnline !== false
+}
+
 export function productCategoryName(product: Product): string {
   return productCategory(product)?.name || ''
 }
@@ -15,6 +25,7 @@ export function productCategoryName(product: Product): string {
  */
 export function productIcon(product: Product): string {
   if (product.type === 'service') return 'fa-solid fa-stethoscope'
+  if (product.type === 'exam') return 'fa-solid fa-vial'
 
   const slug = productCategory(product)?.slug || ''
   const porPalabra: Array<[RegExp, string]> = [

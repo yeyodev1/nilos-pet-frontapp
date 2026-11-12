@@ -1,6 +1,10 @@
 import { onMounted, ref, watch } from 'vue'
 import { catalogService } from '@/services/catalog.service'
 import type { ApiError, Category, Product } from '@/types'
+import { site } from '@/config/site'
+
+// Los servicios y exámenes tienen página propia: no son filtros de la tienda.
+const HIDDEN = [...site.serviceGroups, ...site.examGroups, 'servicios-veterinarios']
 
 const PAGE_SIZE = 12
 
@@ -30,6 +34,7 @@ export function useCatalog(initial: { search?: string; category?: string } = {})
       const data = await catalogService.listProducts({
         search: search.value.trim() || undefined,
         category: category.value || undefined,
+        type: 'physical',
         page: page.value,
         limit: PAGE_SIZE,
       })
@@ -50,7 +55,9 @@ export function useCatalog(initial: { search?: string; category?: string } = {})
 
   async function fetchCategories() {
     try {
-      categories.value = await catalogService.getCategories()
+      categories.value = (await catalogService.getCategories()).filter(
+        (cat) => !HIDDEN.includes(cat.slug),
+      )
     } catch {
       // Sin categorías el filtro simplemente no se muestra.
       categories.value = []

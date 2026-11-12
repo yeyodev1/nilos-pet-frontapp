@@ -13,8 +13,7 @@ export interface SummaryLine {
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { formatMoney } from '@/utils/format'
-import { formatDateTime } from '@/utils/datetime'
+import { formatDate, formatMoney } from '@/utils/format'
 
 const props = withDefaults(
   defineProps<{
@@ -42,17 +41,17 @@ const count = computed(() => props.lines.reduce((sum, line) => sum + line.qty, 0
           <span v-if="line.branchName" class="summary__booking">
             <i class="fa-solid fa-location-dot"></i>
             {{ line.branchName }}
-            <template v-if="line.scheduledFor"> · {{ formatDateTime(line.scheduledFor) }}</template>
+            <template v-if="line.scheduledFor"> · {{ formatDate(line.scheduledFor) }}</template>
           </span>
-          <span v-if="line.qty > 1" class="summary__qty">{{ line.qty }} × {{ formatMoney(line.price / 100) }}</span>
+          <span v-if="line.qty > 1" class="summary__qty"
+            >{{ line.qty }} × {{ formatMoney(line.price / 100) }}</span
+          >
         </div>
         <span class="summary__amount">{{ formatMoney((line.price * line.qty) / 100) }}</span>
       </li>
     </ul>
 
-    <p v-else class="summary__count">
-      {{ count }} {{ count === 1 ? 'artículo' : 'artículos' }}
-    </p>
+    <p v-else class="summary__count">{{ count }} {{ count === 1 ? 'artículo' : 'artículos' }}</p>
 
     <div class="summary__total">
       <span>Total</span>

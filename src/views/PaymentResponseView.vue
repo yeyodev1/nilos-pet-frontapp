@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useUserStore } from '@/stores/user'
 import { orderService } from '@/services/order.service'
-import { formatDateTime } from '@/utils/datetime'
+import { formatDate } from '@/utils/format'
 import OrderSummary from '@/components/checkout/OrderSummary.vue'
 import type { SummaryLine } from '@/components/checkout/OrderSummary.vue'
 import type { ApiError, Order, OrderItem } from '@/types'
@@ -42,7 +42,12 @@ onMounted(async () => {
   const id = route.query.id
   const clientTransactionId = route.query.clientTransactionId
 
-  if (typeof id !== 'string' || !id || typeof clientTransactionId !== 'string' || !clientTransactionId) {
+  if (
+    typeof id !== 'string' ||
+    !id ||
+    typeof clientTransactionId !== 'string' ||
+    !clientTransactionId
+  ) {
     state.value = 'invalid'
     return
   }
@@ -78,9 +83,18 @@ onMounted(async () => {
       <i class="fa-solid fa-circle-check payment__icon payment__icon--ok"></i>
       <p class="payment__eyebrow">Pago confirmado</p>
       <h1>¡Gracias por tu compra!</h1>
-      <p v-if="order">Tu pedido <strong>#{{ order.number }}</strong> quedó registrado y te enviamos el detalle al correo.</p>
+      <p v-if="order">
+        Tu pedido <strong>#{{ order.number }}</strong> quedó registrado y te enviamos el detalle al
+        correo.
+      </p>
 
-      <OrderSummary v-if="order" :lines="summaryLines" :total="order.total" title="Tu pedido" class="payment__summary" />
+      <OrderSummary
+        v-if="order"
+        :lines="summaryLines"
+        :total="order.total"
+        title="Tu pedido"
+        class="payment__summary"
+      />
 
       <div v-if="bookings.length" class="payment__bookings">
         <h2><i class="fa-solid fa-calendar-check"></i> Tus reservas</h2>
@@ -89,7 +103,7 @@ onMounted(async () => {
             <strong>{{ item.name }}</strong>
             <span>
               {{ branchName(item) || 'Sucursal por confirmar' }}
-              <template v-if="item.scheduledFor"> · {{ formatDateTime(item.scheduledFor) }}</template>
+              <template v-if="item.scheduledFor"> · {{ formatDate(item.scheduledFor) }}</template>
             </span>
           </li>
         </ul>
@@ -97,8 +111,14 @@ onMounted(async () => {
       </div>
 
       <div class="payment__actions">
-        <RouterLink v-if="userStore.hasToken" class="btn btn--primary" to="/cuenta">Ver mi cuenta</RouterLink>
-        <RouterLink class="btn" :class="userStore.hasToken ? 'btn--ghost' : 'btn--primary'" to="/tienda">
+        <RouterLink v-if="userStore.hasToken" class="btn btn--primary" to="/cuenta"
+          >Ver mi cuenta</RouterLink
+        >
+        <RouterLink
+          class="btn"
+          :class="userStore.hasToken ? 'btn--ghost' : 'btn--primary'"
+          to="/tienda"
+        >
           Seguir comprando
         </RouterLink>
       </div>
@@ -108,7 +128,10 @@ onMounted(async () => {
       <i class="fa-solid fa-circle-xmark payment__icon payment__icon--muted"></i>
       <p class="payment__eyebrow">Pago cancelado</p>
       <h1>No se realizó ningún cobro</h1>
-      <p>Cancelaste el pago antes de completarlo. Tu carrito sigue intacto por si quieres intentarlo de nuevo.</p>
+      <p>
+        Cancelaste el pago antes de completarlo. Tu carrito sigue intacto por si quieres intentarlo
+        de nuevo.
+      </p>
       <div class="payment__actions">
         <RouterLink class="btn btn--primary" to="/checkout">Volver a intentar</RouterLink>
         <RouterLink class="btn btn--ghost" to="/carrito">Ver el carrito</RouterLink>
@@ -119,7 +142,12 @@ onMounted(async () => {
       <i class="fa-solid fa-triangle-exclamation payment__icon payment__icon--bad"></i>
       <p class="payment__eyebrow">Pago no confirmado</p>
       <h1>No pudimos confirmar tu pago</h1>
-      <p>{{ errorMessage || 'La transacción no se completó. Si el cobro aparece en tu tarjeta, escríbenos y lo revisamos de inmediato.' }}</p>
+      <p>
+        {{
+          errorMessage ||
+          'La transacción no se completó. Si el cobro aparece en tu tarjeta, escríbenos y lo revisamos de inmediato.'
+        }}
+      </p>
       <div class="payment__actions">
         <RouterLink class="btn btn--primary" to="/carrito">Volver al carrito</RouterLink>
       </div>
@@ -129,7 +157,10 @@ onMounted(async () => {
       <i class="fa-solid fa-link-slash payment__icon payment__icon--muted"></i>
       <p class="payment__eyebrow">Enlace inválido</p>
       <h1>Falta información del pago</h1>
-      <p>Este enlace no trae los datos de la transacción. Si vienes de pagar, revisa el correo de confirmación o escríbenos.</p>
+      <p>
+        Este enlace no trae los datos de la transacción. Si vienes de pagar, revisa el correo de
+        confirmación o escríbenos.
+      </p>
       <div class="payment__actions">
         <RouterLink class="btn btn--primary" to="/">Ir al inicio</RouterLink>
       </div>
