@@ -73,9 +73,10 @@ const {
       </select>
 
       <select v-model="type" class="products__select" aria-label="Filtrar por tipo">
-        <option value="">Físicos y servicios</option>
+        <option value="">Todos los tipos</option>
         <option value="physical">Solo físicos</option>
         <option value="service">Solo servicios</option>
+        <option value="exam">Solo exámenes</option>
       </select>
 
       <select v-model="published" class="products__select" aria-label="Filtrar por publicación">
