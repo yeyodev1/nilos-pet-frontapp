@@ -63,6 +63,7 @@ export interface ProductInput {
   priceFrom: boolean
   payOnline: boolean
   dateRange: boolean
+  subgroup: string
 }
 
 export type ProductPatch = Partial<ProductInput & { isPublished: boolean; isFeatured: boolean }>

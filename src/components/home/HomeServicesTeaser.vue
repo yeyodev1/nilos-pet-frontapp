@@ -4,12 +4,10 @@ import { site } from '@/config/site'
 import { useGsapReveal } from '@/composables/useGsapReveal'
 import DisplayParts from '@/components/ui/DisplayParts.vue'
 import PawPrint from '@/components/ui/PawPrint.vue'
+import HomeServicesCarousel from '@/components/home/HomeServicesCarousel.vue'
 
 const root = ref<HTMLElement | null>(null)
 useGsapReveal(root)
-
-// Los tres pasos de reserva: copy corto, números grandes.
-const steps = ['Elige el servicio', 'Reserva en tu sucursal', 'Paga en línea o en el local']
 </script>
 
 <template>
@@ -34,14 +32,9 @@ const steps = ['Elige el servicio', 'Reserva en tu sucursal', 'Paga en línea o 
           {{ site.servicesBand.cta }} <i class="fa-solid fa-arrow-right"></i>
         </RouterLink>
       </div>
-
-      <ol class="services-band__steps">
-        <li v-for="(step, index) in steps" :key="step" data-reveal :data-reveal-delay="index * 0.1">
-          <span class="services-band__step-number">{{ String(index + 1).padStart(2, '0') }}</span>
-          <span class="services-band__step-label">{{ step }}</span>
-        </li>
-      </ol>
     </div>
+
+    <HomeServicesCarousel />
   </section>
 </template>
 
@@ -65,9 +58,10 @@ const steps = ['Elige el servicio', 'Reserva en tu sucursal', 'Paga en línea o 
 
     @include from('md') {
       flex-direction: row;
-      align-items: center;
+      align-items: flex-end;
+      justify-content: space-between;
       gap: 4rem;
-      padding-block: $space-section;
+      padding-block: $space-section $space-lg;
     }
   }
 
@@ -89,40 +83,8 @@ const steps = ['Elige el servicio', 'Reserva en tu sucursal', 'Paga en línea o 
 
   &__text {
     color: rgba($paper, 0.78);
-    max-width: 46ch;
+    max-width: 52ch;
     margin-bottom: 0.5rem;
-  }
-
-  &__steps {
-    @include flex(column, stretch, flex-start);
-    flex: 1;
-    list-style: none;
-
-    li {
-      @include flex(row, baseline, flex-start, 1.2rem);
-      font-family: $font-display;
-      font-size: $text-xl;
-      padding-block: 1.1rem;
-      border-bottom: 1px solid rgba($paper, 0.18);
-      @include transition(padding-left);
-
-      &:first-child {
-        border-top: 1px solid rgba($paper, 0.18);
-      }
-
-      &:hover {
-        padding-left: 0.6rem;
-
-        .services-band__step-label {
-          font-style: italic;
-        }
-      }
-    }
-  }
-
-  &__step-number {
-    @include eyebrow;
-    color: $blush;
   }
 
   &__paw--one {

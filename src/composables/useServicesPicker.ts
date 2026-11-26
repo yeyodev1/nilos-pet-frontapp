@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { catalogService } from '@/services/catalog.service'
 import { finalPrice, productCategory } from '@/utils/catalog'
 import type { ApiError, Product, ProductType } from '@/types'
@@ -35,10 +35,25 @@ export function useServicesPicker(type: ProductType, groupSlugs: readonly string
       .filter((cat) => cat !== undefined && cat !== null),
   )
 
-  const visible = computed(() =>
+  const inGroup = computed(() =>
     group.value
       ? items.value.filter((item) => productCategory(item)?.slug === group.value)
       : items.value,
+  )
+
+  /** Subgrupos (exámenes) del grupo elegido, en orden alfabético. */
+  const subgroup = ref('')
+  watch(group, () => (subgroup.value = ''))
+  const subgroups = computed(() =>
+    [...new Set(inGroup.value.map((item) => item.subgroup || '').filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'es'))
+      .map((name) => ({ slug: name, name })),
+  )
+
+  const visible = computed(() =>
+    subgroup.value
+      ? inGroup.value.filter((item) => item.subgroup === subgroup.value)
+      : inGroup.value,
   )
 
   function toggle(id: string) {
@@ -62,6 +77,8 @@ export function useServicesPicker(type: ProductType, groupSlugs: readonly string
     reload: load,
     group,
     groups,
+    subgroup,
+    subgroups,
     visible,
     toggle,
     selectedIds,

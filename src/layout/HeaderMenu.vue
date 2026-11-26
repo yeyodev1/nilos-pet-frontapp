@@ -11,7 +11,13 @@ const userStore = useUserStore()
   <Transition name="menu">
     <nav v-if="open" class="menu" aria-label="Menú móvil">
       <template v-for="link in site.nav" :key="link.to">
-        <RouterLink :to="link.to" class="menu-link">{{ link.label }}</RouterLink>
+        <RouterLink
+          :to="link.to"
+          class="menu-link"
+          :class="{ 'menu-link--highlight': link.highlight }"
+        >
+          {{ link.label }}
+        </RouterLink>
         <RouterLink
           v-for="child in link.children"
           :key="child.label"
@@ -74,6 +80,11 @@ const userStore = useUserStore()
     &:last-of-type {
       padding-bottom: 0.9rem;
     }
+  }
+
+  &--highlight {
+    color: $accent;
+    font-style: italic;
   }
 
   &--alt {

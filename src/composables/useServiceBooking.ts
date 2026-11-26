@@ -7,6 +7,7 @@ import { useCartStore } from '@/stores/cart'
 import { useToastStore } from '@/stores/toast'
 import { useUserStore } from '@/stores/user'
 import { canPayOnline } from '@/utils/catalog'
+import { loadLastCustomer, saveLastCustomer } from '@/utils/lastCustomer'
 import type { ApiError, Branch, Product } from '@/types'
 
 /** Solo fecha: la hora la confirma la sucursal. Mediodía de Guayaquil evita saltos de día. */
@@ -30,16 +31,18 @@ export function useServiceBooking(getProducts: () => Product[], onDone: () => vo
   const endDate = ref('')
   const sending = ref(false)
 
+  // Sesión primero; si no hay, lo que el cliente escribió en su última reserva.
   const user = userStore.user
+  const last = loadLastCustomer()
   const customer = reactive({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
+    name: user?.name || last.name || '',
+    email: user?.email || last.email || '',
+    phone: user?.phone || last.phone || '',
   })
   const pet = reactive({
-    name: user?.pet?.name || '',
-    species: user?.pet?.species || '',
-    breed: user?.pet?.breed || '',
+    name: user?.pet?.name || last.pet?.name || '',
+    species: user?.pet?.species || last.pet?.species || '',
+    breed: user?.pet?.breed || last.pet?.breed || '',
   })
 
   // La cita más próxima posible: mañana.
@@ -127,6 +130,7 @@ export function useServiceBooking(getProducts: () => Product[], onDone: () => vo
           ...(dateRange.value ? { preferredEnd: toIso(endDate.value) } : {}),
         })
       }
+      saveLastCustomer({ ...customer, pet: { ...pet } })
       toast.success('Reserva enviada. Te contactaremos para confirmar la cita.')
       onDone()
     } catch (e) {

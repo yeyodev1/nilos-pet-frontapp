@@ -30,7 +30,7 @@ export const site = {
       ],
     },
     { label: 'Tienda en línea', to: '/tienda' },
-    { label: 'Servicios', to: '/servicios' },
+    { label: 'Servicios', to: '/servicios', highlight: true },
     {
       label: 'Exámenes',
       to: '/examenes',
@@ -131,7 +131,16 @@ export const site = {
       { text: ' con reserva' },
     ],
     text: 'Spa, consulta, vacunas, cirugía y hospedaje sin jaulas. Eliges el servicio, reservas en tu sucursal y pagas en línea o en el local.',
-    cta: 'Reservar un servicio',
+    cta: 'Ver todos los servicios',
+    carousel: {
+      label: 'Nuestros servicios',
+      prev: 'Servicio anterior',
+      next: 'Siguiente servicio',
+      pause: 'Pausar el carrusel',
+      play: 'Reanudar el carrusel',
+      from: 'Desde',
+      cta: 'Reservar',
+    },
   },
   pillars: [
     {
@@ -153,6 +162,13 @@ export const site = {
   servicesPage: {
     eyebrow: 'Servicios',
     title: '¿Qué necesita tu mascota hoy?',
+    titleParts: [
+      { text: '¿Qué necesita tu mascota ' },
+      { text: 'hoy', italic: true },
+      { text: '?' },
+    ],
+    sticker: 'reserva en línea',
+    imageAlt: 'Veterinaria de Nilos Pet revisando a un cachorro en consulta',
     subtitle:
       'Servicios clínicos, de estética y prevención. Elige tu sucursal y reserva, paga en línea o escríbenos por WhatsApp, según el servicio.',
     all: 'Todos los servicios',
@@ -165,6 +181,9 @@ export const site = {
   branchesPage: {
     eyebrow: 'Servicios veterinarios',
     title: 'Nuestras sucursales',
+    titleParts: [{ text: 'Nuestras ' }, { text: 'sucursales', italic: true }],
+    sticker: 'te esperamos',
+    imageAlt: 'Recepción de una sucursal de Nilos Pet con una clienta y su perro',
     subtitle: 'Elige tu local más cercano y contáctanos directamente por WhatsApp.',
     contact: 'Contáctanos',
     directions: 'Cómo llegar',
@@ -188,6 +207,10 @@ export const site = {
   examsPage: {
     eyebrow: 'Exámenes',
     title: 'Arma la orden de exámenes',
+    titleParts: [{ text: 'Arma la orden de ' }, { text: 'exámenes', italic: true }],
+    sticker: 'resultados en línea',
+    imageAlt: 'Laboratorio de Nilos Pet con muestras y microscopio',
+    allSubgroups: 'Todos los subgrupos',
     subtitle:
       'Marca los exámenes que necesita tu mascota, elige sucursal y fecha para la toma de muestra y paga en línea. Los resultados se consultan después con tu cédula.',
     all: 'Todos',
@@ -223,6 +246,8 @@ export const site = {
 export interface NavLink {
   label: string
   to: string
+  /** Se pinta como píldora para que resalte en el menú. */
+  highlight?: boolean
   children?: { label: string; to: string }[]
 }
 

@@ -41,7 +41,10 @@ function isActive(to: string): boolean {
           <RouterLink
             :to="link.to"
             class="header__link"
-            :class="{ 'header__link--active': isActive(link.to) }"
+            :class="{
+              'header__link--active': isActive(link.to),
+              'header__link--highlight': link.highlight,
+            }"
           >
             {{ link.label }}
             <i v-if="link.children" class="fa-solid fa-chevron-down header__caret"></i>
@@ -79,7 +82,9 @@ function isActive(to: string): boolean {
         >
           <i class="fa-solid fa-circle-user"></i>
         </RouterLink>
-        <RouterLink v-else to="/login" class="btn btn--paper header__cta">Ingresar</RouterLink>
+        <RouterLink v-else to="/login" class="btn btn--paper header__cta">
+          <i class="fa-solid fa-circle-user" aria-hidden="true"></i> Ingresar
+        </RouterLink>
 
         <button
           class="header__burger"
@@ -118,8 +123,12 @@ function isActive(to: string): boolean {
 
   &__logo {
     width: auto;
-    height: 44px;
+    height: 36px;
     @include transition(transform);
+
+    @include from('sm') {
+      height: 44px;
+    }
 
     @include from('lg') {
       height: 50px;
@@ -166,6 +175,21 @@ function isActive(to: string): boolean {
     &--active {
       color: $paper;
       border-color: $blush;
+    }
+
+    // Servicios en píldora rosa: es lo que más queremos que se clickee.
+    &--highlight {
+      background: $blush;
+      color: $accent-deep;
+      padding: 0.45rem 0.95rem;
+      border-radius: $radius-pill;
+      border-bottom: none;
+
+      &:hover,
+      &.header__link--active {
+        background: $paper;
+        color: $accent-deep;
+      }
     }
   }
 
@@ -238,14 +262,15 @@ function isActive(to: string): boolean {
     padding-inline: 0.25rem;
   }
 
+  // Visible también en el celular: el cliente no lo encontraba dentro del menú.
   &__cta {
-    display: none;
-    padding: 0.55rem 1.2rem;
+    padding: 0.45rem 0.8rem;
     font-size: $text-xs;
-    margin-left: 0.4rem;
+    gap: 0.35rem;
 
     @include from('lg') {
-      display: inline-flex;
+      padding: 0.55rem 1.2rem;
+      margin-left: 0.4rem;
     }
   }
 

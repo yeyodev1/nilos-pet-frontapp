@@ -1,8 +1,6 @@
 <script setup lang="ts">
 // Píldoras de filtro por grupo: las comparten Servicios y Exámenes.
-import type { Category } from '@/types'
-
-defineProps<{ groups: Category[]; allLabel: string }>()
+defineProps<{ groups: ReadonlyArray<{ slug: string; name: string }>; allLabel: string }>()
 const model = defineModel<string>({ required: true })
 </script>
 
@@ -11,7 +9,7 @@ const model = defineModel<string>({ required: true })
     <button :class="{ on: model === '' }" @click="model = ''">{{ allLabel }}</button>
     <button
       v-for="item in groups"
-      :key="item._id"
+      :key="item.slug"
       :class="{ on: model === item.slug }"
       @click="model = item.slug"
     >

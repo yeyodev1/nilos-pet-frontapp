@@ -2,6 +2,8 @@
 import { onMounted, ref } from 'vue'
 import { site, whatsappLink } from '@/config/site'
 import { catalogService } from '@/services/catalog.service'
+import PageHero from '@/components/ui/PageHero.vue'
+import heroImage from '@/assets/hero-sucursales.webp'
 import type { Branch } from '@/types'
 
 const copy = site.branchesPage
@@ -24,60 +26,64 @@ function mapSrc(branch: Branch): string {
 </script>
 
 <template>
-  <div class="branches">
-    <header class="branches__head">
-      <p class="branches__eyebrow">{{ copy.eyebrow }}</p>
-      <h1 class="branches__title">{{ copy.title }}</h1>
-      <p>{{ copy.subtitle }}</p>
-    </header>
+  <div>
+    <PageHero
+      :eyebrow="copy.eyebrow"
+      :title-parts="copy.titleParts"
+      :subtitle="copy.subtitle"
+      :image="heroImage"
+      :alt="copy.imageAlt"
+      :sticker="copy.sticker"
+    />
+    <div class="branches">
+      <p v-if="loading" class="branches__loading"><i class="fa-solid fa-spinner fa-spin"></i></p>
 
-    <p v-if="loading" class="branches__loading"><i class="fa-solid fa-spinner fa-spin"></i></p>
-
-    <div v-else class="branches__list">
-      <article v-for="branch in branches" :key="branch._id" class="branches__card">
-        <div class="branches__cover">
-          <img v-if="branch.image" :src="branch.image" :alt="`Fachada de ${branch.name}`" />
-          <i v-else class="fa-solid fa-shop" aria-hidden="true"></i>
-          <span class="branches__tag">{{ branch.name }}</span>
-        </div>
-
-        <div class="branches__body">
-          <h2>Nilos Pet {{ branch.name }}</h2>
-          <p><i class="fa-solid fa-location-dot"></i> {{ branch.address }}</p>
-          <p v-if="branch.hours"><i class="fa-solid fa-clock"></i> {{ branch.hours }}</p>
-          <p v-if="branch.phone"><i class="fa-brands fa-whatsapp"></i> {{ branch.phone }}</p>
-
-          <iframe
-            class="branches__map"
-            :src="mapSrc(branch)"
-            :title="`Mapa de ${branch.name}`"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
-
-          <div class="branches__actions">
-            <a
-              class="btn branches__whatsapp"
-              :href="
-                whatsappLink(`Hola, quiero contactar a Nilos Pet ${branch.name}`, branch.phone)
-              "
-              target="_blank"
-              rel="noopener"
-            >
-              <i class="fa-brands fa-whatsapp"></i> {{ copy.contact }}
-            </a>
-            <a
-              v-if="branch.mapsUrl"
-              class="btn btn--ghost"
-              :href="branch.mapsUrl"
-              target="_blank"
-              rel="noopener"
-            >
-              <i class="fa-solid fa-diamond-turn-right"></i> {{ copy.directions }}
-            </a>
+      <div v-else class="branches__list">
+        <article v-for="branch in branches" :key="branch._id" class="branches__card">
+          <div class="branches__cover">
+            <img v-if="branch.image" :src="branch.image" :alt="`Fachada de ${branch.name}`" />
+            <i v-else class="fa-solid fa-shop" aria-hidden="true"></i>
+            <span class="branches__tag">{{ branch.name }}</span>
           </div>
-        </div>
-      </article>
+
+          <div class="branches__body">
+            <h2>Nilos Pet {{ branch.name }}</h2>
+            <p><i class="fa-solid fa-location-dot"></i> {{ branch.address }}</p>
+            <p v-if="branch.hours"><i class="fa-solid fa-clock"></i> {{ branch.hours }}</p>
+            <p v-if="branch.phone"><i class="fa-brands fa-whatsapp"></i> {{ branch.phone }}</p>
+
+            <iframe
+              class="branches__map"
+              :src="mapSrc(branch)"
+              :title="`Mapa de ${branch.name}`"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+
+            <div class="branches__actions">
+              <a
+                class="btn branches__whatsapp"
+                :href="
+                  whatsappLink(`Hola, quiero contactar a Nilos Pet ${branch.name}`, branch.phone)
+                "
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fa-brands fa-whatsapp"></i> {{ copy.contact }}
+              </a>
+              <a
+                v-if="branch.mapsUrl"
+                class="btn btn--ghost"
+                :href="branch.mapsUrl"
+                target="_blank"
+                rel="noopener"
+              >
+                <i class="fa-solid fa-diamond-turn-right"></i> {{ copy.directions }}
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
     </div>
   </div>
 </template>
@@ -86,23 +92,6 @@ function mapSrc(branch: Branch): string {
 .branches {
   @include container;
   padding-block: $space-lg $space-xl;
-
-  &__head {
-    text-align: center;
-    max-width: 620px;
-    margin: 0 auto $space-lg;
-    color: $ink-soft;
-  }
-
-  &__eyebrow {
-    @include eyebrow;
-  }
-
-  &__title {
-    @include display(clamp(2.4rem, 6vw, 4rem));
-    color: $ink;
-    margin-block: 0.6rem;
-  }
 
   &__loading {
     text-align: center;
@@ -150,7 +139,7 @@ function mapSrc(branch: Branch): string {
     padding: 1.4rem;
 
     h2 {
-      @include display($text-xl, 600);
+      @include display($display-sm, 500);
     }
 
     p {

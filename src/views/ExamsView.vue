@@ -6,6 +6,8 @@ import { formatMoney } from '@/utils/format'
 import { finalPrice } from '@/utils/catalog'
 import ServiceModal from '@/components/services/ServiceModal.vue'
 import GroupFilter from '@/components/services/GroupFilter.vue'
+import PageHero from '@/components/ui/PageHero.vue'
+import heroImage from '@/assets/hero-examenes.webp'
 
 const copy = site.examsPage
 const {
@@ -14,6 +16,8 @@ const {
   reload,
   group,
   groups,
+  subgroup,
+  subgroups,
   visible,
   toggle,
   selectedIds,
@@ -30,62 +34,74 @@ function closeOrder() {
 </script>
 
 <template>
-  <div class="exams">
-    <header class="exams__head">
-      <p class="exams__eyebrow">{{ copy.eyebrow }}</p>
-      <h1 class="exams__title">{{ copy.title }}</h1>
-      <p class="exams__subtitle">{{ copy.subtitle }}</p>
-      <RouterLink to="/resultados" class="btn btn--ghost">
+  <div>
+    <PageHero
+      :eyebrow="copy.eyebrow"
+      :title-parts="copy.titleParts"
+      :subtitle="copy.subtitle"
+      :image="heroImage"
+      :alt="copy.imageAlt"
+      :sticker="copy.sticker"
+    >
+      <RouterLink to="/resultados" class="btn btn--primary">
         <i class="fa-solid fa-file-waveform"></i> {{ copy.resultsCta }}
       </RouterLink>
-    </header>
+    </PageHero>
+    <div class="exams">
+      <GroupFilter v-model="group" :groups="groups" :all-label="copy.all" />
+      <GroupFilter
+        v-if="subgroups.length"
+        v-model="subgroup"
+        class="exams__subgroups"
+        :groups="subgroups"
+        :all-label="copy.allSubgroups"
+      />
 
-    <GroupFilter v-model="group" :groups="groups" :all-label="copy.all" />
-
-    <p v-if="loading" class="exams__state"><i class="fa-solid fa-spinner fa-spin"></i></p>
-    <div v-else-if="error" class="exams__state">
-      <p>{{ error }}</p>
-      <button class="btn btn--ghost" @click="reload">Reintentar</button>
-    </div>
-
-    <ul v-else class="exams__list">
-      <li v-for="exam in visible" :key="exam._id">
-        <label class="exams__row" :class="{ 'exams__row--on': selectedIds.has(exam._id) }">
-          <input
-            type="checkbox"
-            class="visually-hidden"
-            :checked="selectedIds.has(exam._id)"
-            @change="toggle(exam._id)"
-          />
-          <span class="exams__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-          <span class="exams__name">{{ exam.name }}</span>
-          <span class="exams__price" :class="{ 'exams__price--ask': exam.price === 0 }">
-            {{ exam.price > 0 ? formatMoney(finalPrice(exam) / 100) : 'Precio en sucursal' }}
-          </span>
-        </label>
-      </li>
-    </ul>
-
-    <Transition name="rise">
-      <div v-if="selected.length" class="exams__summary">
-        <div>
-          <span class="exams__summary-count">
-            {{ selected.length }} {{ selected.length === 1 ? 'examen' : 'exámenes' }}
-          </span>
-          <strong class="exams__summary-total">{{ formatMoney(totalCents / 100) }}</strong>
-          <small v-if="hasUnpriced">{{ copy.unpricedNote }}</small>
-        </div>
-        <button class="btn btn--paper" @click="ordering = true">
-          Continuar <i class="fa-solid fa-arrow-right"></i>
-        </button>
+      <p v-if="loading" class="exams__state"><i class="fa-solid fa-spinner fa-spin"></i></p>
+      <div v-else-if="error" class="exams__state">
+        <p>{{ error }}</p>
+        <button class="btn btn--ghost" @click="reload">Reintentar</button>
       </div>
-    </Transition>
 
-    <ServiceModal
-      :products="ordering ? selected : []"
-      title="Toma de muestra"
-      @close="closeOrder"
-    />
+      <ul v-else class="exams__list">
+        <li v-for="exam in visible" :key="exam._id">
+          <label class="exams__row" :class="{ 'exams__row--on': selectedIds.has(exam._id) }">
+            <input
+              type="checkbox"
+              class="visually-hidden"
+              :checked="selectedIds.has(exam._id)"
+              @change="toggle(exam._id)"
+            />
+            <span class="exams__check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+            <span class="exams__name">{{ exam.name }}</span>
+            <span class="exams__price" :class="{ 'exams__price--ask': exam.price === 0 }">
+              {{ exam.price > 0 ? formatMoney(finalPrice(exam) / 100) : 'Precio en sucursal' }}
+            </span>
+          </label>
+        </li>
+      </ul>
+
+      <Transition name="rise">
+        <div v-if="selected.length" class="exams__summary">
+          <div>
+            <span class="exams__summary-count">
+              {{ selected.length }} {{ selected.length === 1 ? 'examen' : 'exámenes' }}
+            </span>
+            <strong class="exams__summary-total">{{ formatMoney(totalCents / 100) }}</strong>
+            <small v-if="hasUnpriced">{{ copy.unpricedNote }}</small>
+          </div>
+          <button class="btn btn--paper" @click="ordering = true">
+            Continuar <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </Transition>
+
+      <ServiceModal
+        :products="ordering ? selected : []"
+        title="Toma de muestra"
+        @close="closeOrder"
+      />
+    </div>
   </div>
 </template>
 
@@ -94,22 +110,19 @@ function closeOrder() {
   @include container(860px);
   padding-block: $space-lg 9rem;
 
-  &__head {
-    @include flex(column, flex-start, flex-start, 0.8rem);
-    margin-bottom: $space-lg;
-  }
+  &__subgroups {
+    margin-top: -0.6rem;
 
-  &__eyebrow {
-    @include eyebrow;
-  }
+    :deep(button) {
+      font-size: $text-xs;
+      padding: 0.35rem 0.9rem;
+      background: $blush-soft;
+      border-color: transparent;
 
-  &__title {
-    @include display(clamp(2.2rem, 5.5vw, 3.8rem));
-  }
-
-  &__subtitle {
-    color: $ink-soft;
-    max-width: 58ch;
+      &.on {
+        background: $accent-deep;
+      }
+    }
   }
 
   &__state {

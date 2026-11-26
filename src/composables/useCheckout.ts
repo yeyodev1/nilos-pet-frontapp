@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import { orderService } from '@/services/order.service'
 import { usePayphoneBox } from '@/composables/usePayphoneBox'
+import { loadLastCustomer, saveLastCustomer } from '@/utils/lastCustomer'
 import type { ApiError, Order, OrderItemInput } from '@/types'
 
 export type CheckoutStep = 'form' | 'creating' | 'box'
@@ -37,6 +38,13 @@ export function useCheckout() {
 
     if (userStore.user) apply(userStore.user)
     else if (userStore.hasToken) userStore.restore().then(apply)
+
+    // Invitado: lo último que escribió en este navegador.
+    const last = loadLastCustomer()
+    if (!form.name) form.name = last.name || ''
+    if (!form.email) form.email = last.email || ''
+    if (!form.phone) form.phone = last.phone || ''
+    if (!form.documentId) form.documentId = last.documentId || ''
   }
   prefill()
 
@@ -68,6 +76,7 @@ export function useCheckout() {
 
     step.value = 'creating'
     expired.value = false
+    saveLastCustomer({ ...form })
 
     try {
       const items: OrderItemInput[] = cart.lines.map((line) => ({

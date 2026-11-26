@@ -5,6 +5,8 @@ import { useServicesPicker } from '@/composables/useServicesPicker'
 import ServiceRow from '@/components/services/ServiceRow.vue'
 import ServiceModal from '@/components/services/ServiceModal.vue'
 import GroupFilter from '@/components/services/GroupFilter.vue'
+import PageHero from '@/components/ui/PageHero.vue'
+import heroImage from '@/assets/hero-servicios.webp'
 import type { Product } from '@/types'
 
 const copy = site.servicesPage
@@ -17,44 +19,48 @@ const open = ref<Product | null>(null)
 </script>
 
 <template>
-  <div class="services">
-    <header class="services__head">
-      <p class="services__eyebrow">{{ copy.eyebrow }}</p>
-      <h1 class="services__title">{{ copy.title }}</h1>
-      <p class="services__subtitle">{{ copy.subtitle }}</p>
-    </header>
+  <div>
+    <PageHero
+      :eyebrow="copy.eyebrow"
+      :title-parts="copy.titleParts"
+      :subtitle="copy.subtitle"
+      :image="heroImage"
+      :alt="copy.imageAlt"
+      :sticker="copy.sticker"
+    />
+    <div class="services">
+      <ol class="services__flow">
+        <li v-for="(step, index) in copy.flow" :key="step.label" class="services__flow-step">
+          <span class="services__flow-number">{{ String(index + 1).padStart(2, '0') }}</span>
+          <i :class="step.icon" aria-hidden="true"></i>
+          <span>{{ step.label }}</span>
+        </li>
+      </ol>
 
-    <ol class="services__flow">
-      <li v-for="(step, index) in copy.flow" :key="step.label" class="services__flow-step">
-        <span class="services__flow-number">{{ String(index + 1).padStart(2, '0') }}</span>
-        <i :class="step.icon" aria-hidden="true"></i>
-        <span>{{ step.label }}</span>
-      </li>
-    </ol>
+      <GroupFilter v-model="group" :groups="groups" :all-label="copy.all" />
 
-    <GroupFilter v-model="group" :groups="groups" :all-label="copy.all" />
+      <section class="services__list" aria-live="polite">
+        <div v-if="loading" class="services__skeleton" aria-hidden="true">
+          <div v-for="n in 4" :key="n" class="services__skeleton-row"></div>
+        </div>
 
-    <section class="services__list" aria-live="polite">
-      <div v-if="loading" class="services__skeleton" aria-hidden="true">
-        <div v-for="n in 4" :key="n" class="services__skeleton-row"></div>
-      </div>
+        <div v-else-if="error" class="services__state">
+          <h2 class="services__state-title">No pudimos cargar los servicios</h2>
+          <p class="services__state-text">{{ error }}</p>
+          <button class="btn btn--ghost" @click="reload">Reintentar</button>
+        </div>
 
-      <div v-else-if="error" class="services__state">
-        <h2 class="services__state-title">No pudimos cargar los servicios</h2>
-        <p class="services__state-text">{{ error }}</p>
-        <button class="btn btn--ghost" @click="reload">Reintentar</button>
-      </div>
+        <ServiceRow
+          v-for="service in visible"
+          v-else
+          :key="service._id"
+          :service="service"
+          @open="open = service"
+        />
+      </section>
 
-      <ServiceRow
-        v-for="service in visible"
-        v-else
-        :key="service._id"
-        :service="service"
-        @open="open = service"
-      />
-    </section>
-
-    <ServiceModal :products="open ? [open] : []" :title="open?.name || ''" @close="open = null" />
+      <ServiceModal :products="open ? [open] : []" :title="open?.name || ''" @close="open = null" />
+    </div>
   </div>
 </template>
 
@@ -62,24 +68,6 @@ const open = ref<Product | null>(null)
 .services {
   @include container(960px);
   padding-block: $space-lg $space-xl;
-
-  &__head {
-    @include flex(column, flex-start, flex-start, 0.8rem);
-    margin-bottom: $space-lg;
-  }
-
-  &__eyebrow {
-    @include eyebrow;
-  }
-
-  &__title {
-    @include display(clamp(2.4rem, 6vw, 4.2rem));
-  }
-
-  &__subtitle {
-    color: $ink-soft;
-    max-width: 52ch;
-  }
 
   &__flow {
     @include flex-cards(170px, 1rem);

@@ -66,6 +66,8 @@ export interface Product {
   payOnline: boolean
   /** La reserva pide fecha de ingreso y de salida (hospedaje). */
   dateRange: boolean
+  /** Solo exámenes: subgrupo dentro de su grupo. */
+  subgroup?: string
   createdAt?: string
 }
 

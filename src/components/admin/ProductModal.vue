@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRef } from 'vue'
+import { toRef } from 'vue'
 import AdminFormModal from './AdminFormModal.vue'
 import { serviceFlags, useAdminProductForm } from '@/composables/useAdminProductForm'
 import type { Category, Product } from '@/types'
@@ -23,7 +23,8 @@ const {
   save,
   pickFile,
   uploadImage,
-  removeImage,
+  armedImage,
+  onRemoveImage,
 } = useAdminProductForm(toRef(props, 'open'), toRef(props, 'product'), () => emit('saved'))
 
 async function onSubmit() {
@@ -34,19 +35,6 @@ function onFileChange(event: Event) {
   const input = event.target as HTMLInputElement
   pickFile(input.files?.[0] || null)
   input.value = ''
-}
-
-// Borrar una imagen pide un segundo clic sobre el mismo botón: confirmación
-// destructiva sin apilar otro modal encima del formulario.
-const armedImage = ref('')
-
-function onRemoveImage(publicId: string) {
-  if (armedImage.value === publicId) {
-    armedImage.value = ''
-    removeImage(publicId)
-  } else {
-    armedImage.value = publicId
-  }
 }
 </script>
 
@@ -107,6 +95,16 @@ function onRemoveImage(publicId: string) {
             placeholder="0"
           />
         </div>
+      </div>
+
+      <div v-if="form.type === 'exam'" class="pform__field">
+        <label for="pform-subgroup">Subgrupo (opcional)</label>
+        <input
+          id="pform-subgroup"
+          v-model="form.subgroup"
+          type="text"
+          placeholder="Ej.: Bioquímica, Hematología…"
+        />
       </div>
 
       <div v-if="form.type !== 'physical'" class="pform__flags">

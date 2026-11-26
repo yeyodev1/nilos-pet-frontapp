@@ -16,10 +16,10 @@ import HomeCta from '@/components/home/HomeCta.vue'
     <HomeBanner />
     <HomeHero />
     <HomeMarquee />
+    <HomeServicesTeaser />
     <HomeCategories />
     <HomeSteps />
     <HomeFeatured />
-    <HomeServicesTeaser />
     <HomeResultsTeaser />
     <HomeReviews />
     <HomeCta />

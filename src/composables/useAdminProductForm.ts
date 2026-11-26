@@ -40,6 +40,7 @@ export function useAdminProductForm(
     priceFrom: false,
     payOnline: true,
     dateRange: false,
+    subgroup: '',
     isPublished: false,
     isFeatured: false,
   })
@@ -57,6 +58,7 @@ export function useAdminProductForm(
     form.priceFrom = product?.priceFrom || false
     form.payOnline = product?.payOnline ?? true
     form.dateRange = product?.dateRange || false
+    form.subgroup = product?.subgroup || ''
     form.isPublished = product?.isPublished || false
     form.isFeatured = product?.isFeatured || false
     clearFile()
@@ -110,6 +112,7 @@ export function useAdminProductForm(
         priceFrom: isService && form.priceFrom,
         payOnline: !isService || form.payOnline,
         dateRange: isService && form.dateRange,
+        subgroup: form.type === 'exam' ? form.subgroup.trim() : '',
       }
       if (current.value) {
         await adminService.updateProduct(current.value._id, {
@@ -189,7 +192,22 @@ export function useAdminProductForm(
     }
   }
 
+  // Borrar una imagen pide un segundo clic sobre el mismo botón: confirmación
+  // destructiva sin apilar otro modal encima del formulario.
+  const armedImage = ref('')
+
+  function onRemoveImage(publicId: string) {
+    if (armedImage.value === publicId) {
+      armedImage.value = ''
+      removeImage(publicId)
+    } else {
+      armedImage.value = publicId
+    }
+  }
+
   return {
+    armedImage,
+    onRemoveImage,
     form,
     current,
     isEdit,
