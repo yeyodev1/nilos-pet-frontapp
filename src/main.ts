@@ -21,4 +21,7 @@ window.addEventListener('auth:token-expired', () => {
   }
 })
 
+// Tras un deploy, una pestaña vieja pide chunks que ya no existen: recargar trae los nuevos.
+window.addEventListener('vite:preloadError', () => window.location.reload())
+
 app.mount('#app')
