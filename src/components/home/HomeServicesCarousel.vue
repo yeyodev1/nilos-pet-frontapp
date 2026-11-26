@@ -75,7 +75,7 @@ onMounted(async () => {
 <style scoped lang="scss">
 .carousel {
   position: relative;
-  padding-bottom: $space-xl;
+  padding-bottom: $space-md;
 
   &__controls {
     @include container;

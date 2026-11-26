@@ -44,10 +44,13 @@ export function useServicesPicker(type: ProductType, groupSlugs: readonly string
   /** Subgrupos (exámenes) del grupo elegido, en orden alfabético. */
   const subgroup = ref('')
   watch(group, () => (subgroup.value = ''))
+  // Solo dentro de un grupo: con "Todos" mezclaría subgrupos de grupos distintos.
   const subgroups = computed(() =>
-    [...new Set(inGroup.value.map((item) => item.subgroup || '').filter(Boolean))]
-      .sort((a, b) => a.localeCompare(b, 'es'))
-      .map((name) => ({ slug: name, name })),
+    group.value
+      ? [...new Set(inGroup.value.map((item) => item.subgroup || '').filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b, 'es'))
+          .map((name) => ({ slug: name, name }))
+      : [],
   )
 
   const visible = computed(() =>
