@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import { orderService } from '@/services/order.service'
 import { usePayphoneBox } from '@/composables/usePayphoneBox'
-import { loadLastCustomer, saveLastCustomer } from '@/utils/lastCustomer'
+import { loadLastCustomer, saveLastCustomer, type LastCustomer } from '@/utils/lastCustomer'
 import type { ApiError, Order, OrderItemInput } from '@/types'
 
 export type CheckoutStep = 'form' | 'creating' | 'box'
@@ -47,6 +47,14 @@ export function useCheckout() {
     if (!form.documentId) form.documentId = last.documentId || ''
   }
   prefill()
+
+  /** Lo que trajo ReturningCustomer: pisa solo lo que vino con valor. */
+  function fill(data: LastCustomer) {
+    form.name = data.name || form.name
+    form.email = data.email || form.email
+    form.phone = data.phone || form.phone
+    form.documentId = data.documentId || form.documentId
+  }
 
   /** Líneas sin precio asignado: el backend las rechaza, mejor avisar antes. */
   const unbuyable = computed(() => cart.lines.filter((line) => line.price <= 0))
@@ -122,5 +130,5 @@ export function useCheckout() {
     order.value = null
   }
 
-  return { form, errors, step, expired, order, unbuyable, canPay, submit, retry, dispose }
+  return { form, errors, step, expired, order, unbuyable, canPay, submit, retry, dispose, fill }
 }

@@ -2,13 +2,18 @@
 import { useCartStore } from '@/stores/cart'
 import { useCheckout } from '@/composables/useCheckout'
 import { formatMoney } from '@/utils/format'
+import ReturningCustomer from '@/components/ui/ReturningCustomer.vue'
 
 const cart = useCartStore()
-const { form, errors, unbuyable, canPay, submit } = useCheckout()
+const { form, errors, unbuyable, canPay, submit, fill } = useCheckout()
+// Si ya vino lleno (sesión o este navegador) no hace falta preguntar.
+const askReturning = !form.name
 </script>
 
 <template>
   <form class="buyer" novalidate @submit.prevent="submit">
+    <ReturningCustomer v-if="askReturning" @fill="fill" />
+
     <p class="buyer__hint">
       Estos datos los pide Payphone para procesar el pago y te enviaremos el comprobante al correo.
     </p>

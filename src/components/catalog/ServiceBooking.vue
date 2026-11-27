@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Product } from '@/types'
 import { useServiceBooking } from '@/composables/useServiceBooking'
+import ReturningCustomer from '@/components/ui/ReturningCustomer.vue'
 
 const props = defineProps<{ products: Product[] }>()
 const emit = defineEmits<{ done: [] }>()
@@ -14,6 +15,8 @@ const {
   minDate,
   customer,
   pet,
+  askReturning,
+  fill,
   bookable,
   payable,
   dateRange,
@@ -66,6 +69,8 @@ const {
             <input id="booking-end" v-model="endDate" type="date" :min="date || minDate" />
           </div>
         </div>
+
+        <ReturningCustomer v-if="askReturning" @fill="fill" />
 
         <div class="booking__pair">
           <div>

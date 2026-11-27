@@ -7,7 +7,7 @@ import { useCartStore } from '@/stores/cart'
 import { useToastStore } from '@/stores/toast'
 import { useUserStore } from '@/stores/user'
 import { canPayOnline } from '@/utils/catalog'
-import { loadLastCustomer, saveLastCustomer } from '@/utils/lastCustomer'
+import { loadLastCustomer, saveLastCustomer, type LastCustomer } from '@/utils/lastCustomer'
 import type { ApiError, Branch, Product } from '@/types'
 
 /** Solo fecha: la hora la confirma la sucursal. Mediodía de Guayaquil evita saltos de día. */
@@ -44,6 +44,16 @@ export function useServiceBooking(getProducts: () => Product[], onDone: () => vo
     species: user?.pet?.species || last.pet?.species || '',
     breed: user?.pet?.breed || last.pet?.breed || '',
   })
+  // Si ya vino lleno no hace falta preguntarle por su compra anterior.
+  const askReturning = !customer.name
+
+  /** Lo que trajo ReturningCustomer: pisa solo lo que vino con valor. */
+  function fill(data: LastCustomer) {
+    customer.name = data.name || customer.name
+    customer.email = data.email || customer.email
+    customer.phone = data.phone || customer.phone
+    if (data.pet) Object.assign(pet, data.pet)
+  }
 
   // La cita más próxima posible: mañana.
   const minDate = new Date(Date.now() + 86_400_000).toLocaleDateString('en-CA')
@@ -149,6 +159,8 @@ export function useServiceBooking(getProducts: () => Product[], onDone: () => vo
     minDate,
     customer,
     pet,
+    askReturning,
+    fill,
     bookable,
     payable,
     dateRange,
