@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useCartStore } from '@/stores/cart'
 import { formatDate, formatMoney } from '@/utils/format'
 import OrderSummary from '@/components/checkout/OrderSummary.vue'
+import QtyStepper from '@/components/ui/QtyStepper.vue'
 import type { SummaryLine } from '@/components/checkout/OrderSummary.vue'
 
 const cart = useCartStore()
@@ -42,7 +43,9 @@ const summaryLines = computed<SummaryLine[]>(() =>
           </RouterLink>
 
           <div class="cart__body">
-            <RouterLink :to="`/producto/${line.slug}`" class="cart__name">{{ line.name }}</RouterLink>
+            <RouterLink :to="`/producto/${line.slug}`" class="cart__name">{{
+              line.name
+            }}</RouterLink>
             <p class="cart__unit">{{ formatMoney(line.price / 100) }} c/u</p>
             <p v-if="line.type !== 'physical' && line.branchName" class="cart__booking">
               <i class="fa-solid fa-location-dot"></i>
@@ -52,26 +55,33 @@ const summaryLines = computed<SummaryLine[]>(() =>
           </div>
 
           <div class="cart__controls">
-            <div v-if="line.type === 'physical'" class="cart__qty" aria-label="Cantidad">
-              <button type="button" aria-label="Quitar una unidad" @click="cart.setQty(line.productId, line.qty - 1)">
-                <i class="fa-solid fa-minus"></i>
-              </button>
-              <span>{{ line.qty }}</span>
-              <button type="button" aria-label="Agregar una unidad" @click="cart.setQty(line.productId, line.qty + 1)">
-                <i class="fa-solid fa-plus"></i>
-              </button>
-            </div>
+            <QtyStepper
+              v-if="line.type === 'physical'"
+              size="sm"
+              :model-value="line.qty"
+              @update:model-value="cart.setQty(line.productId, $event)"
+            />
 
             <p class="cart__subtotal">{{ formatMoney((line.price * line.qty) / 100) }}</p>
 
-            <button class="cart__remove" type="button" aria-label="Eliminar del carrito" @click="cart.remove(line.productId)">
+            <button
+              class="cart__remove"
+              type="button"
+              aria-label="Eliminar del carrito"
+              @click="cart.remove(line.productId)"
+            >
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
         </li>
       </ul>
 
-      <OrderSummary :lines="summaryLines" :total="cart.total" :show-lines="false" class="cart__summary">
+      <OrderSummary
+        :lines="summaryLines"
+        :total="cart.total"
+        :show-lines="false"
+        class="cart__summary"
+      >
         <RouterLink class="btn btn--primary cart__checkout" to="/checkout">
           Finalizar compra <i class="fa-solid fa-arrow-right"></i>
         </RouterLink>
@@ -208,35 +218,6 @@ const summaryLines = computed<SummaryLine[]>(() =>
   &__controls {
     @include flex(row, center, flex-end, 0.9rem);
     margin-left: auto;
-  }
-
-  &__qty {
-    @include flex(row, center, center, 0.1rem);
-    border: 1px solid $line;
-    border-radius: $radius-pill;
-    padding: 0.15rem 0.3rem;
-
-    button {
-      @include flex(row, center, center);
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      font-size: 0.68rem;
-      color: $ink-soft;
-      @include transition(background);
-
-      &:hover {
-        background: $sand;
-        color: $accent;
-      }
-    }
-
-    span {
-      min-width: 1.6rem;
-      text-align: center;
-      font-size: $text-sm;
-      font-weight: 600;
-    }
   }
 
   &__subtotal {

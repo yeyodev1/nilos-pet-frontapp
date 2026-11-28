@@ -9,6 +9,7 @@ import { useToastStore } from '@/stores/toast'
 import { formatMoney } from '@/utils/format'
 import { canPayOnline, finalPrice, productCategoryName, productIcon } from '@/utils/catalog'
 import ServiceBooking from '@/components/catalog/ServiceBooking.vue'
+import QtyStepper from '@/components/ui/QtyStepper.vue'
 import type { Product } from '@/types'
 
 const route = useRoute()
@@ -18,11 +19,13 @@ const toast = useToastStore()
 const product = ref<Product | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
+const qty = ref(1)
 
 async function load(slug: string) {
   loading.value = true
   notFound.value = false
   product.value = null
+  qty.value = 1
   try {
     product.value = await catalogService.getProductBySlug(slug)
   } catch {
@@ -52,8 +55,10 @@ const { backTo, goBack } = useBackLink(product)
 
 function addToCart() {
   if (!product.value) return
-  cartStore.add(product.value)
-  toast.success('Agregado al carrito')
+  cartStore.add(product.value, undefined, qty.value)
+  toast.success(
+    qty.value > 1 ? `${qty.value} unidades agregadas al carrito` : 'Agregado al carrito',
+  )
 }
 </script>
 
@@ -81,7 +86,9 @@ function addToCart() {
       <div class="product__layout">
         <div class="product__media">
           <img v-if="image" :src="image" :alt="product.name" />
-          <span v-else class="product__placeholder" aria-hidden="true"><i :class="productIcon(product)"></i></span>
+          <span v-else class="product__placeholder" aria-hidden="true"
+            ><i :class="productIcon(product)"></i
+          ></span>
         </div>
 
         <div class="product__info">
@@ -97,6 +104,7 @@ function addToCart() {
           <p v-if="product.description" class="product__description">{{ product.description }}</p>
 
           <div v-if="canAddToCart" class="product__actions">
+            <QtyStepper v-model="qty" />
             <button class="btn btn--primary" @click="addToCart">
               <i class="fa-solid fa-bag-shopping"></i> Agregar al carrito
             </button>
@@ -205,6 +213,8 @@ function addToCart() {
   }
 
   &__actions {
+    @include flex(row, center, flex-start, 0.75rem);
+    flex-wrap: wrap;
     margin-top: 0.5rem;
   }
 
@@ -285,16 +295,6 @@ function addToCart() {
         width: 55%;
       }
     }
-  }
-}
-
-@keyframes pulso {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
   }
 }
 </style>
